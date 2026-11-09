@@ -1,0 +1,26 @@
+{
+  "launcher": {
+    "nome": "TLW Games",
+    "cor": "#ff5a1f",
+    "cor2": "#ffb800",
+    "logo": ""
+  },
+  "jogos": [
+    {
+      "id": "bar-do-chara-fighter",
+      "nome": "Super Bar do Chará Fighter",
+      "versao": "0.0.99",
+      "genero": "Luta, Ação",
+      "desenvolvedor": "TLW Games",
+      "descricao": "Jogo de luta da TLW Games.",
+      "notas": "nova versão",
+      "tamanho": "116,5 MB",
+      "tipo": "exe",
+      "arquivo": "SuperBarDoCharaFighter.exe",
+      "repo": "bar-do-char--fighter",
+      "download": [
+        "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.0.99/SuperBarDoCharaFighter.exe"
+      ]
+    }
+  ]
+}
