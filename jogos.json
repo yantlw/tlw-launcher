@@ -20,7 +20,8 @@
       "repo": "bar-do-char--fighter",
       "download": [
         "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.0.99/SuperBarDoCharaFighter.exe"
-      ]
+      ],
+      "capa": "https://i.imgur.com/rmF32fD.jpeg"
     }
   ]
 }
