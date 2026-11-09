@@ -22,6 +22,17 @@
         "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.0.99/SuperBarDoCharaFighter.exe"
       ],
       "capa": "https://i.imgur.com/rmF32fD.jpeg"
+    },
+    {
+      "id": "f",
+      "nome": "Five Nights At Chará Lobisomem",
+      "genero": "Terror",
+      "desenvolvedor": "TLW Games",
+      "descricao": "Você, Jhonny Jhonny, foi forçado a trabalhar como vigia noturno por 5 noites. Se não conseguir sobreviver, tornará-se uma vítima de Chara Lobisomem, mas você vai continuar resistindo, não é?",
+      "capa": "https://m.gjcdn.net/game-header/1900/856618-crop0_283_1920_953-awc894h6-v4.webp",
+      "tipo": "exe",
+      "download": [],
+      "emBreve": true
     }
   ]
 }
