@@ -39,6 +39,14 @@
       "arquivo": "FNACL-1.4.3.exe",
       "tamanho": "84,5 MB",
       "repo": "Five-nights-at-chara-lobisomem"
+    },
+    {
+      "id": "jogo",
+      "nome": "Cuidado Com o Mãozudo!",
+      "desenvolvedor": "TLW Games",
+      "tipo": "exe",
+      "download": [],
+      "emBreve": true
     }
   ]
 }
