@@ -1,0 +1,871 @@
+<!doctype html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+   TLW Games Launcher — TELA
+   Pode editar à vontade: cores, textos, layout.
+
+   • Cores principais: no começo do <style>, em ":root"
+     (--acento é o laranja, --verde é o botão Jogar).
+   • Textos dos botões e da tela: no <script>, nas funções render...
+   • Imagens: coloque o arquivo (ex.: logo.png) nesta pasta e use
+     <img src="logo.png">.
+
+   Não precisa mexer no launcher.js. Ele coloca sozinho a "ponte"
+   (o objeto tlw) que faz os botões Instalar/Jogar funcionarem.
+   Dica: com o launcher aberto, aperte Ctrl+R pra ver suas mudanças.
+  ═══════════════════════════════════════════════════════════════
+-->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<title>TLW Games Launcher</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='14' width='56' height='36' rx='6' fill='%23ff5a1f' transform='skewX(-10) translate(5 0)'/%3E%3Ctext x='33' y='41' font-family='Arial Black,Arial' font-weight='900' font-size='21' fill='white' text-anchor='middle'%3ETLW%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #0b0d12;
+  --lateral: #0f1218;
+  --painel: #141821;
+  --painel2: #1b202b;
+  --borda: #242a37;
+  --txt: #e9ebf1;
+  --txt2: #8a93a8;
+  --txt3: #5d667a;
+  --acento: #ff5a1f;
+  --acento2: #ffb800;
+  --verde: #33d17a;
+  --vermelho: #ff4d5e;
+  --titulo: "Segoe UI Black", "Arial Black", "Segoe UI", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body { height: 100%; }
+
+body {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--txt);
+  font: 14px/1.5 "Segoe UI", system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+  user-select: none;
+}
+
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+svg { width: 20px; height: 20px; flex: none; }
+code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+
+/* ───────── topo ───────── */
+
+.topo {
+  height: 56px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 18px 0 20px;
+  background: linear-gradient(180deg, #11141b, #0d1016);
+  border-bottom: 1px solid var(--borda);
+}
+
+.marca { display: flex; align-items: center; gap: 8px; }
+.marca-tlw {
+  font: 900 17px var(--titulo);
+  padding: 2px 9px 2px 8px;
+  background: linear-gradient(135deg, var(--acento), #ff2d55);
+  transform: skewX(-12deg);
+  border-radius: 3px;
+  letter-spacing: .02em;
+}
+.marca-games { font: 800 13px var(--titulo); letter-spacing: .32em; color: var(--txt2); }
+.marca-logo { height: 34px; max-width: 200px; object-fit: contain; }
+
+.abas { display: flex; gap: 4px; height: 100%; }
+.aba {
+  position: relative;
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--txt2);
+}
+.aba.ativa { color: var(--txt); }
+.aba.ativa::after {
+  content: "";
+  position: absolute;
+  left: 14px; right: 14px; bottom: -1px;
+  height: 2px;
+  background: var(--acento);
+}
+
+.topo-dir { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.status { font-size: 12px; color: var(--txt2); display: flex; align-items: center; gap: 7px; }
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--txt3); }
+.status.on::before { background: var(--verde); box-shadow: 0 0 8px var(--verde); }
+
+.icone {
+  width: 38px; height: 38px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  color: var(--txt2);
+  transition: background .15s, color .15s;
+}
+.icone:hover { background: var(--painel2); color: var(--txt); }
+.icone.perigo:hover { color: var(--vermelho); }
+.icone.girando svg { animation: girar .8s linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+
+/* ───────── corpo ───────── */
+
+.corpo { flex: 1; display: grid; grid-template-columns: 280px 1fr; min-height: 0; }
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 14px 10px;
+  background: var(--lateral);
+  border-right: 1px solid var(--borda);
+}
+
+.busca {
+  margin: 0 4px 14px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--borda);
+  background: var(--painel);
+  color: var(--txt);
+  font: inherit;
+  outline: none;
+}
+.busca:focus { border-color: var(--acento); }
+.busca::placeholder { color: var(--txt3); }
+
+.lateral-titulo {
+  padding: 0 8px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--txt3);
+}
+
+.lista { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 8px;
+  text-align: left;
+  transition: background .12s;
+}
+.item:hover { background: var(--painel); }
+.item.sel { background: var(--painel2); box-shadow: inset 3px 0 0 var(--acento); }
+
+.item-txt { display: flex; flex-direction: column; min-width: 0; }
+.item-nome { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-sub { font-size: 12px; color: var(--txt3); }
+.item.instalado .item-sub, .item.rodando .item-sub { color: var(--verde); }
+.item.atualizar .item-sub { color: var(--acento2); }
+.item.ocupado .item-sub { color: var(--acento); }
+
+.vazio-lista { padding: 12px; color: var(--txt3); font-size: 13px; }
+
+/* ───────── arte ───────── */
+
+.arte { position: relative; overflow: hidden; background-color: var(--painel2); }
+.arte-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.arte.gerada {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(-55deg, rgba(255, 255, 255, .035) 0 14px, transparent 14px 28px),
+    radial-gradient(circle at 78% 28%, hsl(var(--h) 90% 55% / .55), transparent 55%),
+    linear-gradient(135deg, hsl(var(--h) 65% 22%), hsl(calc(var(--h) + 50) 70% 8%));
+}
+.arte .ini { font-family: var(--titulo); font-weight: 900; color: rgba(255, 255, 255, .92); font-style: italic; }
+
+.arte.mini { width: 44px; height: 44px; flex: none; border-radius: 8px; }
+.arte.mini .ini { font-size: 12px; letter-spacing: -.02em; }
+
+/* ───────── detalhe ───────── */
+
+.detalhe { overflow-y: auto; min-height: 0; }
+
+.hero { position: relative; height: 340px; overflow: hidden; }
+.hero-arte { position: absolute; inset: 0; }
+.hero-arte.gerada { justify-content: flex-end; padding-right: 6%; }
+.hero-arte .ini { font-size: 170px; opacity: .14; letter-spacing: -.04em; }
+.hero-sombra {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(11, 13, 18, 0) 30%, rgba(11, 13, 18, .75) 72%, var(--bg));
+}
+.hero-info { position: absolute; left: 36px; right: 36px; bottom: 26px; }
+.hero-info h1 {
+  font: 900 44px/1.05 var(--titulo);
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, .6);
+}
+.dev { margin-top: 6px; color: var(--txt2); font-weight: 600; }
+.etiqueta {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--acento) 16%, transparent);
+  color: color-mix(in srgb, var(--acento) 70%, white);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.barra-acao {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin: 0 36px;
+  padding: 16px 16px 16px 16px;
+  border-radius: 12px;
+  background: var(--painel);
+  border: 1px solid var(--borda);
+}
+
+.btn {
+  height: 50px;
+  min-width: 190px;
+  padding: 0 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transition: filter .15s, transform .08s;
+}
+.btn:not(:disabled):hover { filter: brightness(1.1); }
+.btn:not(:disabled):active { transform: translateY(1px); }
+.btn:disabled { cursor: default; }
+.btn-jogar { background: linear-gradient(180deg, #45e08a, #1fb866); color: #04230f; box-shadow: 0 6px 22px rgba(51, 209, 122, .25); }
+.btn-prim { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .1)), var(--acento); color: #fff; box-shadow: 0 6px 22px color-mix(in srgb, var(--acento) 28%, transparent); }
+.btn-atual { background: linear-gradient(180deg, #ffcb45, #f0a300); color: #2a1b00; box-shadow: 0 6px 22px rgba(255, 184, 0, .22); }
+.btn-sec { background: var(--painel2); border: 1px solid var(--borda); color: var(--txt); }
+.btn-sec:disabled { color: var(--txt3); }
+.btn-jogando { background: #173325; color: #7fe3ab; }
+
+.stats { display: flex; gap: 34px; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; }
+.stat-k { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--txt3); }
+.stat-v { font-size: 15px; font-weight: 600; }
+
+.extras { margin-left: auto; display: flex; gap: 4px; }
+
+.progresso { flex: 1; min-width: 0; }
+.progresso-txt { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+.progresso-txt span:first-child { font-weight: 700; }
+.progresso-num { color: var(--txt2); font-variant-numeric: tabular-nums; }
+.trilho { height: 8px; border-radius: 99px; background: #232938; overflow: hidden; }
+.enchimento {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--acento), var(--acento2));
+  transition: width .25s ease;
+}
+.enchimento.indet {
+  background: repeating-linear-gradient(-45deg, var(--acento) 0 12px, var(--acento2) 12px 24px);
+  background-size: 34px 34px;
+  animation: listras .6s linear infinite;
+}
+@keyframes listras { to { background-position: 34px 0; } }
+
+.aviso {
+  margin: 14px 36px 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(255, 184, 0, .08);
+  border: 1px solid rgba(255, 184, 0, .25);
+  color: #ffd36b;
+  font-size: 13px;
+}
+
+.info { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 22px 36px 36px; }
+.bloco { padding: 18px 20px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
+.bloco h3 { margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
+.bloco p { color: #c6cad6; user-select: text; }
+.notas { white-space: pre-line; }
+
+.vazio, .carregando {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--txt2);
+  text-align: center;
+}
+.vazio h2 { font: 900 22px var(--titulo); color: var(--txt); }
+.spinner {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--borda);
+  border-top-color: var(--acento);
+  animation: girar .8s linear infinite;
+}
+
+/* ───────── avisos ───────── */
+
+.toasts { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+.toast {
+  max-width: 360px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  background: var(--painel2);
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--txt2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+  animation: entrar .2s ease;
+  transition: opacity .4s, transform .4s;
+}
+.toast.ok { border-left-color: var(--verde); }
+.toast.erro { border-left-color: var(--vermelho); }
+.toast.saindo { opacity: 0; transform: translateY(6px); }
+@keyframes entrar { from { opacity: 0; transform: translateY(8px); } }
+
+/* ───────── rolagem ───────── */
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-thumb { background: #262c3a; border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background-color: #333b4d; }
+
+@media (max-width: 1100px) {
+  .info { grid-template-columns: 1fr; }
+  .stats { gap: 22px; }
+}
+
+/* Aviso quando o motor (launcher.js) é fechado */
+.caiu { display: none; position: fixed; inset: 0; z-index: 20; place-items: center; text-align: center;
+  background: rgba(8, 10, 14, .94); }
+.caiu h2 { font: 900 22px var(--titulo); margin-bottom: 6px; }
+.caiu p { color: var(--txt2); }
+body.desconectado .caiu { display: grid; }
+
+
+/* ───────── aba Configurações ───────── */
+body.ver-config .corpo { display: none; }
+.config-pagina { display: none; flex: 1; overflow-y: auto; }
+body.ver-config .config-pagina { display: block; }
+.config-miolo { max-width: 780px; padding: 30px 36px 60px; }
+.config-miolo h2 { font: 900 26px var(--titulo); margin-bottom: 4px; }
+.config-miolo .sub { color: var(--txt2); margin-bottom: 22px; }
+.grupo { margin-bottom: 18px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
+.grupo h3 { padding: 16px 20px 6px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
+.opcao { display: flex; align-items: center; gap: 18px; padding: 14px 20px; border-top: 1px solid rgba(255, 255, 255, .04); }
+.grupo h3 + .opcao { border-top: 0; }
+.opcao-txt { flex: 1; min-width: 0; }
+.opcao-titulo { font-weight: 600; }
+.opcao-desc { font-size: 12.5px; color: var(--txt2); }
+.opcao.desligada { opacity: .45; }
+.chave { position: relative; width: 44px; height: 24px; flex: none; }
+.chave input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; z-index: 1; }
+.chave input:disabled { cursor: default; }
+.chave span { position: absolute; inset: 0; border-radius: 99px; background: #2a3040; transition: background .15s; }
+.chave span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #cfd3dd; transition: transform .15s, background .15s; }
+.chave input:checked + span { background: var(--acento); }
+.chave input:checked + span::after { transform: translateX(20px); background: #fff; }
+.pasta-caminho { font-family: Consolas, monospace; font-size: 12.5px; color: var(--txt); background: var(--painel2); padding: 6px 10px; border-radius: 6px; margin-top: 6px; word-break: break-all; user-select: text; }
+.botoes { display: flex; gap: 8px; flex-wrap: wrap; flex: none; }
+.btn-peq { height: 36px; padding: 0 14px; border-radius: 8px; font-weight: 700; font-size: 13px; background: var(--painel2); border: 1px solid var(--borda); }
+.btn-peq:not(:disabled):hover { filter: brightness(1.2); }
+.btn-peq:disabled { opacity: .5; cursor: default; }
+.btn-peq.destaque { background: var(--acento); border-color: transparent; color: #fff; }
+.aviso-exe { margin-bottom: 18px; padding: 11px 14px; border-radius: 10px; font-size: 13px; background: rgba(255, 184, 0, .08); border: 1px solid rgba(255, 184, 0, .25); color: #ffd36b; }
+</style>
+</head>
+<body>
+<header class="topo">
+    <div class="marca"><span class="marca-tlw">TLW</span><span class="marca-games">GAMES</span></div>
+    <nav class="abas"><button class="aba ativa" type="button" data-aba="biblioteca">Biblioteca</button><button class="aba" type="button" data-aba="config">Configurações</button></nav>
+    <div class="topo-dir">
+      <span id="status" class="status"></span>
+      <button id="btn-recarregar" class="icone" type="button" title="Procurar jogos e atualizações"></button>
+    </div>
+  </header>
+
+  <div class="corpo">
+    <aside class="lateral">
+      <input id="busca" class="busca" type="search" placeholder="Buscar jogo…" autocomplete="off">
+      <div class="lateral-titulo">Seus jogos</div>
+      <div id="lista" class="lista"></div>
+    </aside>
+    <main id="detalhe" class="detalhe">
+      <div class="carregando"><div class="spinner"></div>Carregando biblioteca…</div>
+    </main>
+  </div>
+  <section id="config" class="config-pagina"></section>
+
+  <div id="toasts" class="toasts"></div>
+  <div class="caiu"><div><h2>O launcher foi fechado</h2><p>Abra o TLW Games Launcher de novo.</p></div></div>
+
+<script>
+// Se a tela foi aberta sem o motor (dois cliques no HTML ou convertida no modo HTML), explica o que fazer.
+if (!window.tlw) {
+  document.body.innerHTML = '<div style="height:100vh;display:grid;place-items:center;text-align:center;padding:40px;font-family:Segoe UI,sans-serif;background:#0b0d12;color:#e9ebf1">'
+    + '<div style="max-width:560px"><h2 style="font:900 24px Segoe UI Black,Arial Black,sans-serif;margin-bottom:10px">Abra pelo launcher.js</h2>'
+    + '<p style="color:#8a93a8;line-height:1.6">Este arquivo é só a tela. Pra funcionar, abra a pasta no cmd e rode <code style="background:#1b202b;padding:2px 6px;border-radius:4px">node launcher.js</code>.<br>'
+    + 'No ExeForge, converta o <b>launcher.js</b> no modo <b>Node.js</b> (incluindo a pasta toda), e não o HTML.</p></div></div>';
+  throw new Error('Tela aberta sem o motor (launcher.js).');
+}
+
+const ui = { jogos: [], online: false, selecionado: null, progresso: {}, busca: '' };
+const $ = (s) => document.querySelector(s);
+
+// ───────────── formatação ─────────────
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function fmtBytes(b) {
+  if (!b) return '—';
+  const u = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  while (b >= 1024 && i < u.length - 1) { b /= 1024; i++; }
+  return `${b.toLocaleString('pt-BR', { maximumFractionDigits: i >= 2 ? 1 : 0 })} ${u[i]}`;
+}
+
+function fmtTempo(ms) {
+  if (!ms) return 'Nunca jogado';
+  if (ms < 60000) return 'Menos de 1 min';
+  const min = Math.floor(ms / 60000);
+  const h = Math.floor(min / 60);
+  return h ? `${h} h ${min % 60} min` : `${min} min`;
+}
+
+const fmtData = (t) => (t ? new Date(t).toLocaleDateString('pt-BR') : '—');
+const pct = (p) => (p && p.total ? Math.min(100, Math.floor((p.baixado / p.total) * 100)) : 0);
+const limparErro = (e) => String((e && e.message) || e).replace(/^Error invoking remote method '[^']+': (Error: )?/, '');
+
+// ───────────── ícones ─────────────
+
+const ICONES = {
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>',
+  baixar: '<svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pasta: '<svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  lixo: '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.8h6V7m-8.5 0 .9 12.2A1 1 0 0 0 8.4 20h7.2a1 1 0 0 0 1-.8L17.5 7M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  recarregar: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+const icone = (n) => ICONES[n] || '';
+
+// ───────────── arte (capa ou gerada) ─────────────
+
+function matiz(id) {
+  let h = 0;
+  for (const c of String(id)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return h % 360;
+}
+
+function iniciais(nome) {
+  return String(nome).split(/\s+/)
+    .filter((p) => p.length > 2 || /^[A-ZÀ-Ý0-9]/.test(p))
+    .map((p) => p[0]).join('').slice(0, 4).toUpperCase();
+}
+
+function arte(j, classe) {
+  // A arte com as iniciais fica embaixo; a capa aparece por cima quando carrega.
+  // Se o link da capa não funcionar, a imagem some e as iniciais continuam lá.
+  const capa = j.capa
+    ? `<img class="arte-img" src="${esc(j.capa)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
+    : '';
+  return `<div class="arte gerada ${classe}" style="--h:${matiz(j.id)}"><span class="ini">${esc(iniciais(j.nome))}</span>${capa}</div>`;
+}
+
+// ───────────── render ─────────────
+
+const jogoSel = () => ui.jogos.find((j) => j.id === ui.selecionado);
+
+function render() {
+  renderStatus();
+  renderLista();
+  renderDetalhe();
+}
+
+function renderStatus() {
+  const el = $('#status');
+  el.className = `status ${ui.online ? 'on' : 'off'}`;
+  el.textContent = ui.online ? 'Lista atualizada' : 'Lista offline';
+  el.title = ui.online
+    ? 'A lista de jogos foi baixada agora.'
+    : 'Não consegui baixar a lista online. Usando a última salva no computador.';
+}
+
+function situacao(j) {
+  const p = ui.progresso[j.id];
+  if (p) return [p.fase === 'instalando' ? 'Instalando…' : `Baixando ${pct(p)}%`, 'ocupado'];
+  if (j.rodando) return ['Jogando agora', 'rodando'];
+  if (j.emBreve) return ['Em breve', 'embreve'];
+  if (j.atualizacao) return ['Atualização disponível', 'atualizar'];
+  if (j.instalado) return ['Instalado', 'instalado'];
+  return ['Não instalado', ''];
+}
+
+function renderLista() {
+  const termo = ui.busca.trim().toLowerCase();
+  const itens = ui.jogos.filter((j) => !termo || j.nome.toLowerCase().includes(termo));
+  $('#lista').innerHTML = itens.length
+    ? itens.map((j) => {
+      const [sub, cls] = situacao(j);
+      return `<button type="button" class="item ${j.id === ui.selecionado ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
+          ${arte(j, 'mini')}
+          <span class="item-txt"><span class="item-nome">${esc(j.nome)}</span><span class="item-sub">${sub}</span></span>
+        </button>`;
+    }).join('')
+    : `<p class="vazio-lista">${termo ? 'Nenhum jogo encontrado.' : 'Nenhum jogo na lista ainda.'}</p>`;
+}
+
+function renderDetalhe() {
+  const j = jogoSel();
+  const el = $('#detalhe');
+  if (!j) {
+    el.innerHTML = `<div class="vazio"><h2>Nenhum jogo por aqui</h2>
+      <p>Adicione jogos no <code>jogos.json</code> pra eles aparecerem na biblioteca.</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <section class="hero">
+      ${arte(j, 'hero-arte')}
+      <div class="hero-sombra"></div>
+      <div class="hero-info">
+        ${j.genero ? `<span class="etiqueta">${esc(j.genero)}</span>` : ''}
+        <h1>${esc(j.nome)}</h1>
+        <p class="dev">${esc(j.desenvolvedor || 'TLW Games')}</p>
+      </div>
+    </section>
+    <section class="barra-acao" id="barra-acao"></section>
+    ${j.removido ? '<p class="aviso">Esse jogo saiu da lista da TLW Games, mas continua instalado no seu computador.</p>' : ''}
+    <section class="info">
+      <div class="bloco"><h3>Sobre o jogo</h3><p>${esc(j.descricao || 'Sem descrição.')}</p></div>
+      <div class="bloco"><h3>Novidades da versão ${esc(j.versao || '')}</h3><p class="notas">${esc(j.notas || 'Sem notas para esta versão.')}</p></div>
+    </section>`;
+  renderAcao(true);
+}
+
+function renderAcao(forcar) {
+  const j = jogoSel();
+  const el = $('#barra-acao');
+  if (!j || !el) return;
+  const p = ui.progresso[j.id];
+
+  // Durante o download só atualiza a barra, sem recriar os botões (assim o "Cancelar" não pisca).
+  if (p && !forcar && el.dataset.modo === 'prog') {
+    const porc = pct(p);
+    el.querySelector('.progresso-num').textContent = textoProgresso(p);
+    const ench = el.querySelector('.enchimento');
+    ench.classList.toggle('indet', p.fase === 'instalando');
+    ench.style.width = `${p.fase === 'instalando' ? 100 : porc}%`;
+    return;
+  }
+
+  let botao;
+  if (p) botao = '<button type="button" class="btn btn-sec" data-acao="cancelar">Cancelar</button>';
+  else if (j.rodando) botao = '<button type="button" class="btn btn-jogando" disabled>Jogando…</button>';
+  else if (j.emBreve) botao = '<button type="button" class="btn btn-sec" disabled>Em breve</button>';
+  else if (!j.instalado) botao = `<button type="button" class="btn btn-prim" data-acao="instalar">${icone('baixar')}Instalar</button>`;
+  else if (j.atualizacao) botao = `<button type="button" class="btn btn-atual" data-acao="instalar">${icone('baixar')}Atualizar</button>`;
+  else botao = `<button type="button" class="btn btn-jogar" data-acao="jogar">${icone('play')}Jogar</button>`;
+
+  let meio;
+  if (p) {
+    const porc = pct(p);
+    meio = `<div class="progresso">
+        <div class="progresso-txt"><span>${j.instalado ? 'Atualizando' : 'Baixando'}</span><span class="progresso-num">${textoProgresso(p)}</span></div>
+        <div class="trilho"><div class="enchimento ${p.fase === 'instalando' ? 'indet' : ''}" style="width:${p.fase === 'instalando' ? 100 : porc}%"></div></div>
+      </div>`;
+  } else {
+    const stats = j.instalado
+      ? [
+        ['Tempo jogado', fmtTempo(j.instalado.tempoJogado)],
+        ['Última vez', fmtData(j.instalado.ultimaVez)],
+        ['Versão', j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao],
+        ['No disco', fmtBytes(j.instalado.tamanho)],
+      ]
+      : [['Versão', j.versao || '—'], ['Download', j.tamanho || '—']];
+    meio = `<div class="stats">${stats.map(([k, v]) =>
+      `<div class="stat"><span class="stat-k">${k}</span><span class="stat-v">${esc(v)}</span></div>`).join('')}</div>`;
+  }
+
+  const extras = j.instalado && !p
+    ? `<div class="extras">
+        <button type="button" class="icone" data-acao="pasta" title="Abrir pasta do jogo">${icone('pasta')}</button>
+        <button type="button" class="icone perigo" data-acao="desinstalar" title="Desinstalar">${icone('lixo')}</button>
+      </div>`
+    : '';
+
+  el.dataset.modo = p ? 'prog' : 'normal';
+  el.innerHTML = botao + meio + extras;
+}
+
+function textoProgresso(p) {
+  if (p.fase === 'instalando') return 'Instalando…';
+  if (!p.baixado) return 'Conectando…';
+  const total = p.total ? fmtBytes(p.total) : '?';
+  const vel = p.vel ? ` · ${fmtBytes(p.vel)}/s` : '';
+  return `${pct(p)}% · ${fmtBytes(p.baixado)} de ${total}${vel}`;
+}
+
+// ───────────── avisos ─────────────
+
+function toast(msg, tipo = '') {
+  const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.classList.add('saindo'), 4500);
+  setTimeout(() => el.remove(), 5000);
+}
+
+// ───────────── dados ─────────────
+
+// Cores, nome e logo que você define no Admin (seção "launcher" do jogos.json).
+function aplicarVisual(v) {
+  v = v || {};
+  const raiz = document.documentElement.style;
+  const cor = (c) => typeof c === 'string' && /^#[0-9a-f]{3,8}$/i.test(c);
+  if (cor(v.cor)) raiz.setProperty('--acento', v.cor); else raiz.removeProperty('--acento');
+  if (cor(v.cor2)) raiz.setProperty('--acento2', v.cor2); else raiz.removeProperty('--acento2');
+  const nome = String(v.nome || 'TLW Games').trim();
+  const marca = document.querySelector('.marca');
+  if (v.logo) {
+    marca.innerHTML = `<img class="marca-logo" referrerpolicy="no-referrer" src="${esc(v.logo)}" alt="${esc(nome)}">`;
+  } else {
+    const [primeira, ...resto] = nome.split(/\s+/);
+    marca.innerHTML = `<span class="marca-tlw">${esc(primeira)}</span>${resto.length ? `<span class="marca-games">${esc(resto.join(' ').toUpperCase())}</span>` : ''}`;
+  }
+  document.title = `${nome} Launcher`;
+}
+
+function aplicar(r) {
+  aplicarVisual(r.visual);
+  ui.jogos = r.jogos;
+  ui.online = r.online;
+  if (!ui.jogos.some((j) => j.id === ui.selecionado)) ui.selecionado = ui.jogos[0] ? ui.jogos[0].id : null;
+}
+
+async function carregar(manual) {
+  const btn = $('#btn-recarregar');
+  btn.classList.add('girando');
+  try {
+    aplicar(await tlw.catalogo());
+    render();
+    if (manual) toast(ui.online ? 'Lista de jogos atualizada.' : 'Sem conexão com a lista online. Usando a última salva.', ui.online ? 'ok' : '');
+  } finally {
+    btn.classList.remove('girando');
+  }
+}
+
+async function atualizarLocal() {
+  aplicar(await tlw.lista());
+  renderLista();
+  renderDetalhe();
+}
+
+// ───────────── eventos ─────────────
+
+$('#btn-recarregar').innerHTML = icone('recarregar');
+$('#btn-recarregar').addEventListener('click', () => carregar(true));
+
+$('#busca').addEventListener('input', (e) => { ui.busca = e.target.value; renderLista(); });
+
+$('#lista').addEventListener('click', (e) => {
+  const item = e.target.closest('.item');
+  if (!item || item.dataset.id === ui.selecionado) return;
+  ui.selecionado = item.dataset.id;
+  renderLista();
+  renderDetalhe();
+});
+
+$('#detalhe').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-acao]');
+  if (!b || b.disabled) return;
+  const j = jogoSel();
+  if (!j) return;
+  const id = j.id;
+  try {
+    switch (b.dataset.acao) {
+      case 'instalar': {
+        ui.progresso[id] = { id, fase: 'baixando', baixado: 0, total: 0 };
+        renderLista(); renderAcao(true);
+        const r = await tlw.instalar(id);
+        if (r && r.ok) toast(r.atualizou ? `${j.nome} atualizado!` : `${j.nome} instalado! Bora jogar.`, 'ok');
+        else if (r && r.cancelado) toast('Download cancelado.');
+        break;
+      }
+      case 'cancelar': await tlw.cancelar(id); break;
+      case 'jogar': await tlw.jogar(id); break;
+      case 'desinstalar': {
+        const r = await tlw.desinstalar(id, j.nome);
+        if (r && r.ok) toast(`${j.nome} foi desinstalado.`);
+        break;
+      }
+      case 'pasta': await tlw.abrirPasta(id); break;
+      default: break;
+    }
+  } catch (err) {
+    delete ui.progresso[id];
+    renderLista(); renderAcao(true);
+    toast(limparErro(err), 'erro');
+  }
+});
+
+tlw.aoProgresso((d) => {
+  if (d.fase === 'fim') delete ui.progresso[d.id];
+  else ui.progresso[d.id] = d;
+  renderLista();
+  if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
+});
+
+tlw.aoMudar(() => { atualizarLocal(); });
+
+// ───────────── aba Configurações ─────────────
+
+const cfgUI = { dados: null, procurando: false, nova: null, movendo: false, msgVersao: '' };
+
+const OPCOES = [
+  ['Inicialização', [
+    ['iniciarComWindows', 'Abrir junto com o Windows', 'O launcher abre sozinho quando você liga o PC.'],
+    ['iniciarMinimizado', 'Abrir minimizado', 'Quando abrir junto com o Windows, fica só no ícone perto do relógio.', 'iniciarComWindows'],
+  ]],
+  ['Segundo plano', [
+    ['segundoPlano', 'Continuar rodando ao fechar a janela', 'O launcher fica no ícone perto do relógio e continua de olho nas atualizações.'],
+    ['avisarAtualizacoes', 'Avisar quando um jogo tiver atualização', 'Mostra um aviso do Windows quando sair versão nova de um jogo que você tem.'],
+  ]],
+  ['Jogos', [
+    ['atualizarAuto', 'Atualizar os jogos automaticamente', 'Baixa as atualizações sozinho, sem você precisar clicar (menos de jogos que estiverem abertos).'],
+    ['minimizarAoJogar', 'Minimizar o launcher ao abrir um jogo', 'Tira o launcher da frente quando o jogo abre.'],
+  ]],
+];
+
+function chave(k, ligado, desativado) {
+  return `<label class="chave"><input type="checkbox" data-opcao="${k}" ${ligado ? 'checked' : ''} ${desativado ? 'disabled' : ''}><span></span></label>`;
+}
+
+function renderConfig() {
+  const el = $('#config');
+  const d = cfgUI.dados;
+  if (!d) { el.innerHTML = '<div class="carregando"><div class="spinner"></div>Carregando…</div>'; return; }
+  const c = d.config;
+  const semExe = !d.exe;
+  const grupos = OPCOES.map(([titulo, itens]) => {
+    const linhas = itens.map(([k, nome, desc, depende]) => {
+      const off = semExe || (depende && !c[depende]);
+      return `<div class="opcao ${off ? 'desligada' : ''}"><div class="opcao-txt"><div class="opcao-titulo">${nome}</div><div class="opcao-desc">${desc}</div></div>${chave(k, c[k], off)}</div>`;
+    }).join('');
+    const pasta = titulo !== 'Jogos' ? '' : `
+      <div class="opcao"><div class="opcao-txt"><div class="opcao-titulo">Pasta dos jogos</div>
+        <div class="opcao-desc">Os jogos instalados vão junto pra pasta nova.</div>
+        <div class="pasta-caminho">${esc(d.pastaAtual)}</div></div>
+        <div class="botoes">
+          <button type="button" class="btn-peq" data-cfg="pasta-abrir">Abrir</button>
+          <button type="button" class="btn-peq" data-cfg="pasta-mudar" ${cfgUI.movendo ? 'disabled' : ''}>${cfgUI.movendo ? 'Movendo jogos…' : 'Alterar…'}</button>
+          ${d.pastaAtual !== d.pastaPadrao ? `<button type="button" class="btn-peq" data-cfg="pasta-padrao" ${cfgUI.movendo ? 'disabled' : ''}>Voltar pro padrão</button>` : ''}
+        </div></div>`;
+    return `<div class="grupo"><h3>${titulo}</h3>${linhas}${pasta}</div>`;
+  }).join('');
+
+  let sobreBotao;
+  if (cfgUI.nova) sobreBotao = `<button type="button" class="btn-peq destaque" data-cfg="reiniciar">Reiniciar e atualizar</button>`;
+  else sobreBotao = `<button type="button" class="btn-peq" data-cfg="procurar" ${semExe || cfgUI.procurando ? 'disabled' : ''}>${cfgUI.procurando ? 'Procurando…' : 'Procurar atualizações'}</button>`;
+
+  el.innerHTML = `<div class="config-miolo">
+    <h2>Configurações</h2>
+    <p class="sub">As mudanças são salvas na hora.</p>
+    ${semExe ? '<div class="aviso-exe">Você está rodando pelo <b>node launcher.js</b>. Algumas opções só funcionam na versão .exe.</div>' : ''}
+    ${grupos}
+    <div class="grupo"><h3>Sobre</h3>
+      <div class="opcao"><div class="opcao-txt"><div class="opcao-titulo">Versão do launcher</div>
+        <div class="opcao-desc">${d.versaoApp ? esc(d.versaoApp) : 'versão de teste'}${cfgUI.msgVersao ? ` · ${esc(cfgUI.msgVersao)}` : ''}</div>
+        <div class="opcao-desc">O launcher procura atualizações sozinho toda vez que abre.</div></div>
+        <div class="botoes">${sobreBotao}</div></div>
+    </div>
+  </div>`;
+}
+
+async function abrirAba(aba) {
+  document.body.classList.toggle('ver-config', aba === 'config');
+  document.querySelectorAll('.abas .aba').forEach((b) => b.classList.toggle('ativa', b.dataset.aba === aba));
+  if (aba === 'config') {
+    renderConfig();
+    try { cfgUI.dados = await tlw.chamar('config-ver'); } catch (e) { toast(limparErro(e), 'erro'); }
+    renderConfig();
+  }
+}
+
+document.querySelector('.abas').addEventListener('click', (e) => {
+  const b = e.target.closest('.aba');
+  if (b && b.dataset.aba) abrirAba(b.dataset.aba);
+});
+
+$('#config').addEventListener('change', async (e) => {
+  const k = e.target.dataset.opcao;
+  if (!k) return;
+  try {
+    cfgUI.dados = await tlw.chamar('config-salvar', { mudancas: { [k]: e.target.checked } });
+    toast('Configuração salva.', 'ok');
+  } catch (err) { toast(limparErro(err), 'erro'); }
+  renderConfig();
+});
+
+$('#config').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-cfg]');
+  if (!b || b.disabled) return;
+  const acao = b.dataset.cfg;
+  try {
+    if (acao === 'pasta-abrir') return void await tlw.abrirPasta('');
+    if (acao === 'pasta-mudar' || acao === 'pasta-padrao') {
+      let pedido;
+      if (acao === 'pasta-padrao') pedido = { pasta: cfgUI.dados.pastaPadrao };
+      else if (cfgUI.dados.exe) pedido = { escolher: true };
+      else {
+        const p = prompt('Caminho da nova pasta dos jogos:', cfgUI.dados.pastaAtual);
+        if (!p) return;
+        pedido = { pasta: p };
+      }
+      const antes = cfgUI.dados.pastaAtual;
+      cfgUI.dados = await tlw.chamar('config-pasta', pedido);
+      if (cfgUI.dados.pastaAtual !== antes) toast('Pasta dos jogos alterada.', 'ok');
+    }
+    if (acao === 'procurar') {
+      cfgUI.procurando = true; renderConfig();
+      const r = await tlw.chamar('app-procurar');
+      cfgUI.nova = r.nova;
+      cfgUI.msgVersao = r.nova ? `versão ${r.nova} baixada` : (r.msg || 'você já está na versão mais nova');
+    }
+    if (acao === 'reiniciar') return void await tlw.chamar('app-reiniciar');
+  } catch (err) {
+    toast(limparErro(err), 'erro');
+  } finally {
+    cfgUI.procurando = false; cfgUI.movendo = false;
+  }
+  renderConfig();
+});
+
+tlw.aoEvento('pasta', (d) => { cfgUI.movendo = d.fase === 'movendo'; renderConfig(); });
+
+
+carregar(false);
+
+</script>
+</body>
+</html>
