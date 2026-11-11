@@ -6,10 +6,10 @@
   ],
   "publicadoEm": "2026-11-11T12:38:49.111Z",
   "instalador": {
-    "url": "https://github.com/yantlw/tlw-launcher/releases/download/launcher-20261111123824/TLW-Games-Launcher-Setup-202611111223.exe",
-    "sha256": "12f1532a5e0de51158d7bd99fe36215a5f66af00e9ffcdd6f9991f12e35f302b",
-    "tamanho": 82259986,
-    "versao": 202611111223,
-    "publicadoEm": "2026-11-11T12:38:24.977Z"
+    "url": "https://github.com/yantlw/tlw-launcher/releases/download/launcher-20261111132717/TLW-Games-Launcher-Setup-202611111320.exe",
+    "sha256": "152cb02d6437a8f0ab4ffe01bd3c885df06ee89ff50fb041b859d7c55ae34ac1",
+    "tamanho": 82266334,
+    "versao": 202611111320,
+    "publicadoEm": "2026-11-11T13:27:17.657Z"
   }
 }
