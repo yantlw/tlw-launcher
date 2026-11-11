@@ -857,6 +857,10 @@ function ponteDoNavegador(TOKEN) {
     },
     abrirPasta: (id) => api('abrir-pasta', { id }),
     chamar: api,
+    // Link de uma versão reduzida (com qualidade) da imagem: sem serrilhado nas miniaturas.
+    mini: (u, w, h, modo) => (/^https?:\/\//i.test(u || '')
+      ? `/mini?t=${TOKEN}&w=${Math.round(w)}&h=${Math.round(h)}&m=${modo || 'cover'}&u=${encodeURIComponent(u)}`
+      : u),
     aoEvento: (nome, cb) => fonte.addEventListener(nome, (e) => cb(JSON.parse(e.data))),
     aoProgresso: (cb) => fonte.addEventListener('progresso', (e) => cb(JSON.parse(e.data))),
     aoMudar: (cb) => fonte.addEventListener('mudou', () => cb()),
@@ -1267,6 +1271,72 @@ function responder(res, status, tipo, corpo) {
   res.end(corpo);
 }
 
+// ───────────── miniaturas sem serrilhado ─────────────
+// O navegador reduz uma capa de 1920px pra 44px de um jeito "serrilhado". Aqui a imagem é
+// reduzida com o filtro de alta qualidade do Electron, no tamanho exato, e guardada no PC.
+
+const PASTA_MINI = path.join(PASTA_DADOS, 'miniaturas');
+const miniEmAndamento = new Map();
+
+async function gerarMiniatura(u, w, h, modo, arquivo) {
+  let electron = null;
+  try { electron = require('electron'); } catch { /* fora do .exe */ }
+  if (!electron || !electron.nativeImage) return null;
+  const r = await fetch(u, { headers: { 'User-Agent': 'TLW-Games-Launcher' }, signal: AbortSignal.timeout(20000) });
+  if (!r.ok) return null;
+  const buf = Buffer.from(await r.arrayBuffer());
+  if (buf.length > 30 * 1024 * 1024) return null;
+  const img = electron.nativeImage.createFromBuffer(buf);
+  if (img.isEmpty()) return null; // formato que o Electron não lê (GIF, WebP...): usa a original
+  const { width: iw, height: ih } = img.getSize();
+  const escala = modo === 'contain' ? Math.min(w / iw, h / ih) : Math.max(w / iw, h / ih);
+  const saida = escala >= 1 ? buf : img.resize({
+    width: Math.max(1, Math.round(iw * escala)),
+    height: Math.max(1, Math.round(ih * escala)),
+    quality: 'best',
+  }).toPNG();
+  fs.mkdirSync(PASTA_MINI, { recursive: true });
+  fs.writeFileSync(`${arquivo}.tmp`, saida);
+  fs.renameSync(`${arquivo}.tmp`, arquivo);
+  return arquivo;
+}
+
+async function servirMiniatura(res, q) {
+  const u = q.get('u') || '';
+  const w = Math.min(4000, Math.max(8, Number(q.get('w')) || 0));
+  const h = Math.min(4000, Math.max(8, Number(q.get('h')) || 0));
+  const modo = q.get('m') === 'contain' ? 'contain' : 'cover';
+  const original = () => { res.writeHead(302, { Location: u, 'Cache-Control': 'no-store' }); res.end(); };
+  if (!/^https?:\/\//i.test(u) || !w || !h) return original();
+  const chave = crypto.createHash('sha1').update(`${u}|${w}|${h}|${modo}|1`).digest('hex');
+  const arquivo = path.join(PASTA_MINI, `${chave}.img`);
+  let pronto = fs.existsSync(arquivo) ? arquivo : null;
+  if (!pronto) {
+    if (!miniEmAndamento.has(chave)) {
+      miniEmAndamento.set(chave, gerarMiniatura(u, w, h, modo, arquivo).catch(() => null)
+        .finally(() => miniEmAndamento.delete(chave)));
+    }
+    pronto = await miniEmAndamento.get(chave);
+  }
+  if (!pronto) return original();
+  const dados = fs.readFileSync(pronto);
+  const tipo = dados[0] === 0x89 ? 'image/png' : dados[0] === 0xff ? 'image/jpeg' : 'application/octet-stream';
+  res.writeHead(200, { 'Content-Type': tipo, 'Content-Length': dados.length, 'Cache-Control': 'private, max-age=31536000' });
+  return res.end(dados);
+}
+
+// Apaga miniaturas velhas (mais de 60 dias sem uso), pra pasta não crescer pra sempre.
+function limparMiniaturas() {
+  try {
+    const limite = Date.now() - 60 * 24 * 3600 * 1000;
+    for (const n of fs.readdirSync(PASTA_MINI)) {
+      const f = path.join(PASTA_MINI, n);
+      try { if (fs.statSync(f).atimeMs < limite && fs.statSync(f).mtimeMs < limite) fs.rmSync(f, { force: true }); } catch { /* ok */ }
+    }
+  } catch { /* ok */ }
+}
+setTimeout(limparMiniaturas, 30000).unref();
+
 let ultimoCliente = Date.now();
 
 const servidor = http.createServer((req, res) => {
@@ -1282,6 +1352,12 @@ const servidor = http.createServer((req, res) => {
     res.write('retry: 1000\n\n');
     clientes.add(res);
     req.on('close', () => { clientes.delete(res); ultimoCliente = Date.now(); });
+    return undefined;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/mini') {
+    if (url.searchParams.get('t') !== TOKEN) return responder(res, 403, 'text/plain', 'Proibido');
+    servirMiniatura(res, url.searchParams).catch(() => { try { res.writeHead(500); res.end(); } catch { /* ok */ } });
     return undefined;
   }
 
