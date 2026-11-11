@@ -200,15 +200,20 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 
 .detalhe { overflow-y: auto; min-height: 0; }
 
-.hero { position: relative; height: 340px; overflow: hidden; }
+.hero { position: relative; height: clamp(280px, 34vw, 470px); overflow: hidden; }
 .hero-arte { position: absolute; inset: 0; }
+/* O banner é mais largo que a capa: corta mais embaixo que em cima, pra não cortar cabeças e títulos. */
+.hero-arte .arte-img { object-position: center 28%; }
 .hero-arte.gerada { justify-content: flex-end; padding-right: 6%; }
 .hero-arte .ini { font-size: 170px; opacity: .14; letter-spacing: -.04em; }
 .hero-sombra {
   position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(11, 13, 18, 0) 30%, rgba(11, 13, 18, .75) 72%, var(--bg));
 }
-.hero-info { position: absolute; left: 36px; right: 36px; bottom: 26px; }
+.hero-info { position: absolute; left: 36px; right: 36px; bottom: 96px; }
+/* Com capa, o banner fica limpo (a capa já tem o logo do jogo), igual numa loja de jogos. */
+.hero:has(.arte-img) .hero-info { display: none; }
+.hero:has(.arte-img) .hero-sombra { background: linear-gradient(180deg, rgba(11, 13, 18, 0) 62%, rgba(11, 13, 18, .55)); }
 .hero-info h1 {
   font: 900 44px/1.05 var(--titulo);
   text-transform: uppercase;
@@ -230,25 +235,29 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 }
 
 .barra-acao {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 32px;
-  margin: 0 36px;
-  padding: 16px 16px 16px 16px;
-  border-radius: 12px;
-  background: var(--painel);
-  border: 1px solid var(--borda);
+  gap: 30px;
+  min-height: 70px;
+  margin-top: -70px;
+  padding: 11px 24px 11px 20px;
+  background: rgba(16, 19, 27, .74);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  border-bottom: 1px solid var(--borda);
 }
 
 .btn {
-  height: 50px;
+  height: 46px;
   min-width: 190px;
   padding: 0 26px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  border-radius: 8px;
+  border-radius: 4px;
   font-weight: 800;
   font-size: 15px;
   letter-spacing: .08em;
@@ -265,12 +274,17 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 .btn-sec:disabled { color: var(--txt3); }
 .btn-jogando { background: #173325; color: #7fe3ab; }
 
-.stats { display: flex; gap: 34px; flex-wrap: wrap; }
-.stat { display: flex; flex-direction: column; }
-.stat-k { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--txt3); }
-.stat-v { font-size: 15px; font-weight: 600; }
+/* Altura fixa + quebra escondida: em janela pequena, as informações que não cabem somem sozinhas (as últimas primeiro). */
+.stats { flex: 1; min-width: 0; height: 46px; overflow: hidden; display: flex; flex-wrap: wrap; column-gap: 30px; }
+.stat { height: 46px; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.stat svg { width: 26px; height: 26px; color: var(--txt2); }
+.stat-txt { display: flex; flex-direction: column; line-height: 1.3; }
+.stat-k { font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #d5d9e3; }
+.stat-v { font-size: 12.5px; color: var(--txt2); }
 
-.extras { margin-left: auto; display: flex; gap: 4px; }
+.extras { margin-left: auto; display: flex; gap: 6px; }
+.extras .icone { width: 38px; height: 34px; border-radius: 4px; background: rgba(255, 255, 255, .08); color: #c3c8d4; }
+.extras .icone:hover { background: rgba(255, 255, 255, .16); }
 
 .progresso { flex: 1; min-width: 0; }
 .progresso-txt { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 13px; }
@@ -291,7 +305,7 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 @keyframes listras { to { background-position: 34px 0; } }
 
 .aviso {
-  margin: 14px 36px 0;
+  margin: 14px 24px 0;
   padding: 10px 14px;
   border-radius: 8px;
   background: rgba(255, 184, 0, .08);
@@ -300,11 +314,12 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
   font-size: 13px;
 }
 
-.info { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 22px 36px 36px; }
+.info { display: grid; grid-template-columns: 3fr 2fr; gap: 18px; padding: 22px 24px 36px; align-items: start; }
 .bloco { padding: 18px 20px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
 .bloco h3 { margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
-.bloco p { color: #c6cad6; user-select: text; }
-.notas { white-space: pre-line; }
+/* pre-line: respeita as quebras de linha e os parágrafos que você digita no Admin */
+.bloco p { color: #c6cad6; user-select: text; white-space: pre-line; overflow-wrap: anywhere; }
+.bloco .ficha { margin-bottom: 10px; font-size: 12.5px; font-weight: 600; color: var(--txt2); white-space: normal; }
 
 .vazio, .carregando {
   height: 100%;
@@ -352,7 +367,9 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 
 @media (max-width: 1100px) {
   .info { grid-template-columns: 1fr; }
-  .stats { gap: 22px; }
+  .stats { column-gap: 22px; }
+  .barra-acao { gap: 22px; }
+  .btn { min-width: 160px; }
 }
 
 /* Aviso quando o motor (launcher.js) é fechado */
@@ -448,13 +465,24 @@ function fmtBytes(b) {
 
 function fmtTempo(ms) {
   if (!ms) return 'Nunca jogado';
-  if (ms < 60000) return 'Menos de 1 min';
   const min = Math.floor(ms / 60000);
-  const h = Math.floor(min / 60);
-  return h ? `${h} h ${min % 60} min` : `${min} min`;
+  if (min < 1) return 'Menos de 1 minuto';
+  if (min < 60) return `${min} ${min === 1 ? 'minuto' : 'minutos'}`;
+  return `${(min / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} horas`;
 }
 
-const fmtData = (t) => (t ? new Date(t).toLocaleDateString('pt-BR') : '—');
+function fmtData(t) {
+  if (!t) return 'Nunca';
+  const d = new Date(t);
+  const hoje = new Date();
+  const dia = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const dif = Math.round((dia(hoje) - dia(d)) / 86400000);
+  if (dif === 0) return 'Hoje';
+  if (dif === 1) return 'Ontem';
+  const opc = { day: 'numeric', month: 'short' };
+  if (d.getFullYear() !== hoje.getFullYear()) opc.year = 'numeric';
+  return d.toLocaleDateString('pt-BR', opc);
+}
 const pct = (p) => (p && p.total ? Math.min(100, Math.floor((p.baixado / p.total) * 100)) : 0);
 const limparErro = (e) => String((e && e.message) || e).replace(/^Error invoking remote method '[^']+': (Error: )?/, '');
 
@@ -465,6 +493,10 @@ const ICONES = {
   baixar: '<svg viewBox="0 0 24 24"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   pasta: '<svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
   lixo: '<svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4.8h6V7m-8.5 0 .9 12.2A1 1 0 0 0 8.4 20h7.2a1 1 0 0 0 1-.8L17.5 7M10 11v5m4-5v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  relogio: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7v5.2l3.4 2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  calendario: '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 10h17M8 3v4m8-4v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  disco: '<svg viewBox="0 0 24 24"><path d="M4 14.5 6.2 6a1.5 1.5 0 0 1 1.45-1.1h8.7A1.5 1.5 0 0 1 17.8 6L20 14.5v3.1a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.6zm0 0h16M16.5 16.8h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  etiqueta: '<svg viewBox="0 0 24 24"><path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6a1.5 1.5 0 0 1 1.06.44l6.4 6.4a1.5 1.5 0 0 1 0 2.12l-7.6 7.6a1.5 1.5 0 0 1-2.12 0l-6.4-6.4a1.5 1.5 0 0 1-.44-1.06zM8 8h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   recarregar: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 const icone = (n) => ICONES[n] || '';
@@ -556,8 +588,10 @@ function renderDetalhe() {
     <section class="barra-acao" id="barra-acao"></section>
     ${j.removido ? '<p class="aviso">Esse jogo saiu da lista da TLW Games, mas continua instalado no seu computador.</p>' : ''}
     <section class="info">
-      <div class="bloco"><h3>Sobre o jogo</h3><p>${esc(j.descricao || 'Sem descrição.')}</p></div>
-      <div class="bloco"><h3>Novidades da versão ${esc(j.versao || '')}</h3><p class="notas">${esc(j.notas || 'Sem notas para esta versão.')}</p></div>
+      <div class="bloco"><h3>Sobre o jogo</h3>
+        <p class="ficha">${esc([j.genero, j.desenvolvedor || 'TLW Games'].filter(Boolean).join(' · '))}</p>
+        <p>${esc(String(j.descricao || 'Sem descrição.').trim())}</p></div>
+      <div class="bloco"><h3>Novidades da versão ${esc(j.versao || '')}</h3><p class="notas">${esc(String(j.notas || 'Sem notas para esta versão.').trim())}</p></div>
     </section>`;
   renderAcao(true);
 }
@@ -596,14 +630,14 @@ function renderAcao(forcar) {
   } else {
     const stats = j.instalado
       ? [
-        ['Tempo jogado', fmtTempo(j.instalado.tempoJogado)],
-        ['Última vez', fmtData(j.instalado.ultimaVez)],
-        ['Versão', j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao],
-        ['No disco', fmtBytes(j.instalado.tamanho)],
+        ['calendario', 'Última sessão', fmtData(j.instalado.ultimaVez)],
+        ['relogio', 'Tempo de jogo', fmtTempo(j.instalado.tempoJogado)],
+        ['etiqueta', 'Versão', j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao],
+        ['disco', 'Espaço em disco', fmtBytes(j.instalado.tamanho)],
       ]
-      : [['Versão', j.versao || '—'], ['Download', j.tamanho || '—']];
-    meio = `<div class="stats">${stats.map(([k, v]) =>
-      `<div class="stat"><span class="stat-k">${k}</span><span class="stat-v">${esc(v)}</span></div>`).join('')}</div>`;
+      : [['etiqueta', 'Versão', j.versao || '—'], ['disco', 'Download', j.tamanho || '—']];
+    meio = `<div class="stats">${stats.map(([ic, k, v]) =>
+      `<div class="stat">${icone(ic)}<span class="stat-txt"><span class="stat-k">${k}</span><span class="stat-v">${esc(v)}</span></span></div>`).join('')}</div>`;
   }
 
   const extras = j.instalado && !p
