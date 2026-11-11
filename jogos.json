@@ -65,8 +65,14 @@
       "descricao": "Hit the Papa-Tudo!\n\nO Papa-Tudo não fez nada. Mas tá dentro de uma caixa de papelão, com o olho já inchado, e alguém precisa bater nele.\n\nToque pra socar, agarre e arremesse ele contra as paredes e veja o boneco voar, quicar, entortar e perder braço e perna com física ragdoll. A cada pancada ele grita de dor (com palavrão, porque ninguém é de ferro), e quando a barra de KO enche ele desmaia e você ganha moedas.\n\nFerramentas:\n\n🍛 Pratarrada do Curoroca: um PF voando direto na cara\n💩 Merda do Juroreca: suja tudo e ainda atrai mosca\n🖐️ Mãozada do Valdomiro: um tapa só e ele atravessa a caixa\n🦵 Aperto das Coxas de Denis: espreme até virar patê\n👩 Sentada da Vitória: cai do céu e achata no chão\n🛵 Atropelamento de Biz: piloto magrelo, garupa pesada, sem freio\n\nE ainda tem:\n\nCombos que multiplicam suas moedas\nMissões com recompensa\nUpgrades pra cada ferramenta\nSkins pro Papa-Tudo\nBoneco que vai ficando mais destruído quanto mais apanha",
       "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/400249ba-aabe-4275-ada5-9cbb58-mwblg8tb.png",
       "tipo": "exe",
-      "download": [],
-      "emBreve": true
+      "download": [
+        "https://github.com/yantlw/hit-the-papa-tudo/releases/download/v1.5/HitThePapaTudo.exe"
+      ],
+      "versao": "1.5",
+      "notas": "🎬 Abertura nova\n\nIntros da Chará Studios e da TLW Games, com transição em fade.\nCinemática completa: o Palio EX 2001 vinho chega cantando pneu na casa do Papa-Tudo. Valdomiro e Dener descem, derrubam o portão da garagem e arrombam a porta.\nLá dentro, o Papa-Tudo foge em pânico e se tranca atrás da porta sanfonada, enquanto a sombra dos dois toma conta do corredor.\nBotão “Pular” pra quem quer ir direto pra porrada.\n\n🚪 Antes de começar\n\nArrombe a porta sanfonada na mão: cada toque é um soco do Valdomiro ou do Dener.\nO Papa-Tudo implora lá de dentro (“Tô sem dinheiro!”, “Essa porta é alugada!”).\n\n🥊 Jogo\n\nNovo visual do Papa-Tudo, com o olho bem inchado.\nO boneco fica mais acabado conforme apanha: rasga o moletom, vaza enchimento e ele chora.\nA caixa de papelão virou um quarto vazio, com piso vermelhão, lâmpada pelada e calendário de 2001.\nFísica melhorada, sem membros dobrando pra dentro do corpo.\nCâmera lenta no nocaute.\n\n💰 Progressão\n\nCombos que multiplicam as moedas (até x3).\nMissões com recompensa.\nUpgrades de até nível 3 pra cada ferramenta.\nEconomia rebalanceada.\n\n⚙️ Menu e configurações\n\nMenu novo: Jogar, Configurações e Sair do jogo.\nConfigurações de volume, efeitos sonoros, vibração, tremor de tela, sangue cartoon e apagar progresso.\nTela fixa em 9:16 (formato de celular), sem distorcer ao redimensionar a janela.\n\n🐛 Correções\n\nÍcone da moeda agora aparece em qualquer aparelho.\nCorrigidos os recortes nas juntas e nos ombros dos personagens.\nCorrigida a animação de corrida do Papa-Tudo.",
+      "arquivo": "HitThePapaTudo.exe",
+      "tamanho": "84,6 MB",
+      "repo": "hit-the-papa-tudo"
     }
   ]
 }
