@@ -979,14 +979,37 @@ async function infoExePublicado() {
   return exe && /^https?:\/\//.test(exe.url || '') && /^[a-f0-9]{64}$/.test(exe.sha256 || '') ? exe : null;
 }
 
-function reabrir(exe) {
-  const args = process.argv.includes('--oculto') ? ['--oculto'] : [];
+// Script ajudante: espera o launcher fechar de vez (no Windows o .exe portátil fica
+// "preso" enquanto está aberto), troca o .exe pelo novo e reabre o launcher.
+const TROCAR_BAT = [
+  '@echo off',
+  'setlocal',
+  'set "ALVO=%~1"',
+  'set "NOVO=%~2"',
+  'set "EXTRA=%~3"',
+  'set /a TENTA=0',
+  ':espera',
+  'ping -n 2 127.0.0.1 >nul',
+  'move /y "%NOVO%" "%ALVO%" >nul 2>&1',
+  'if not errorlevel 1 goto pronto',
+  'set /a TENTA+=1',
+  'if %TENTA% lss 60 goto espera',
+  'rem Nao conseguiu trocar em 1 minuto: abre o launcher que ja estava la.',
+  ':pronto',
+  'if exist "%ALVO%" start "" "%ALVO%" %EXTRA%',
+  '(goto) 2>nul & del "%~f0"',
+].join('\r\n');
+
+function trocarEReabrir(exe, novo) {
+  const extra = process.argv.includes('--oculto') ? '--oculto' : '';
   if (process.platform === 'win32') {
-    // Espera uns 2 segundos (o launcher atual fechar) e abre o .exe novo.
-    const cmd = `ping -n 3 127.0.0.1 >nul & start "" "${exe}"${args.length ? ' --oculto' : ''}`;
-    spawn('cmd.exe', ['/d', '/s', '/c', `"${cmd}"`], { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }).unref();
+    const bat = path.join(os.tmpdir(), `tlw-trocar-launcher-${Date.now()}.bat`);
+    fs.writeFileSync(bat, TROCAR_BAT);
+    spawn('cmd.exe', ['/d', '/s', '/c', `""${bat}" "${exe}" "${novo}" "${extra}""`],
+      { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }).unref();
   } else {
-    spawn(exe, args, { detached: true, stdio: 'ignore' }).unref();
+    const sh = 'for i in $(seq 1 30); do sleep 1; mv -f "$2" "$1" 2>/dev/null && break; done; chmod +x "$1"; "$1" $3 &';
+    spawn('sh', ['-c', sh, 'sh', exe, novo, extra], { detached: true, stdio: 'ignore' }).unref();
   }
   try { servidor.close(); } catch { /* ok */ }
   setTimeout(() => {
@@ -1014,20 +1037,15 @@ async function atualizarExe(mostrar) {
       avisar(`Baixando launcher novo… ${mb(baixado)} de ${mb(total || info.tamanho || baixado)} MB`, total ? baixado / total : null);
     });
     if ((await hashArquivo(novo)) !== info.sha256) throw new Error('arquivo diferente do publicado');
-    avisar('Instalando a nova versão…', 1);
-    const antigo = exeAntigo(exe);
-    try { fs.rmSync(antigo, { force: true }); } catch { /* ok */ }
-    fs.renameSync(exe, antigo);
-    try { fs.renameSync(novo, exe); } catch (e) { fs.renameSync(antigo, exe); throw e; }
-    if (process.platform !== 'win32') { try { fs.chmodSync(exe, 0o755); } catch { /* ok */ } }
-    const st = fs.statSync(exe);
+    // Já deixa anotado o hash do .exe novo (a troca não muda o tamanho nem a data do arquivo).
+    const st = fs.statSync(novo);
     salvarJSON(ARQ_HASH_EXE, { caminho: exe, tamanho: st.size, mtime: st.mtimeMs, sha256: info.sha256 });
   } catch {
     try { fs.rmSync(novo, { force: true }); } catch { /* ok */ }
     return false; // sem internet, sem permissão na pasta etc.: segue com o .exe atual
   }
-  avisar('Reabrindo o launcher…', 1);
-  reabrir(exe);
+  avisar('Reabrindo o launcher atualizado…', 1);
+  trocarEReabrir(exe, novo);
   return true;
 }
 
@@ -1036,8 +1054,13 @@ async function atualizarExe(mostrar) {
 function janelinhaPropria() {
   const { BrowserWindow } = require('electron');
   let ico = '';
+  let icoArquivo = '';
   for (const p of [process.env.TLW_PASTA_EMBUTIDA, __dirname].filter(Boolean)) {
-    try { ico = `data:image/png;base64,${fs.readFileSync(path.join(p, 'icone.png')).toString('base64')}`; break; } catch { /* tenta a próxima */ }
+    try {
+      icoArquivo = path.join(p, 'icone.png');
+      ico = `data:image/png;base64,${fs.readFileSync(icoArquivo).toString('base64')}`;
+      break;
+    } catch { icoArquivo = ''; }
   }
   const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   *{box-sizing:border-box;margin:0}html,body{height:100%;overflow:hidden;user-select:none;-webkit-app-region:drag}
@@ -1057,15 +1080,18 @@ function janelinhaPropria() {
   const w = new BrowserWindow({
     width: 380, height: 250, frame: false, resizable: false, maximizable: false, fullscreenable: false,
     backgroundColor: '#0b0d12', center: true, alwaysOnTop: true, show: true, title: 'TLW Games Launcher',
+    ...(icoArquivo ? { icon: icoArquivo } : {}),
   });
   w.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   let ultimo = null;
   w.webContents.on('did-finish-load', () => { if (ultimo) w.webContents.executeJavaScript(ultimo).catch(() => {}); });
-  return (texto, fracao) => {
+  const mostrar = (texto, fracao) => {
     if (w.isDestroyed()) return;
     ultimo = `window.mostrar && window.mostrar(${JSON.stringify(texto)}, ${fracao == null ? 'null' : Number(fracao)})`;
     w.webContents.executeJavaScript(ultimo).catch(() => {});
   };
+  mostrar.fechar = () => { if (!w.isDestroyed()) w.destroy(); };
+  return mostrar;
 }
 
 if (casca && casca.temGanchos) {
@@ -1075,13 +1101,22 @@ if (casca && casca.temGanchos) {
   // .exe antigo: confere sozinho e, se tiver .exe novo, esconde a tela e mostra a nossa janelinha.
   (async () => {
     let janelinha = null;
+    let escondidas = [];
     const oculto = process.argv.includes('--oculto');
-    await atualizarExe((texto, fracao) => {
+    const atualizou = await atualizarExe((texto, fracao) => {
       if (!janelinha && !oculto) {
-        try { require('electron').BrowserWindow.getAllWindows().forEach((w) => w.hide()); } catch { /* ok */ }
+        try {
+          escondidas = require('electron').BrowserWindow.getAllWindows().filter((w) => w.isVisible());
+          escondidas.forEach((w) => w.hide());
+        } catch { /* ok */ }
         janelinha = janelinhaPropria();
       }
       if (janelinha) janelinha(texto, fracao);
-    });
+    }).catch(() => false);
+    if (!atualizou && janelinha) {
+      // Deu errado (internet caiu etc.): fecha a janelinha e volta pro launcher normal.
+      janelinha.fechar();
+      escondidas.forEach((w) => { if (!w.isDestroyed()) w.show(); });
+    }
   })().catch(() => {});
 }
