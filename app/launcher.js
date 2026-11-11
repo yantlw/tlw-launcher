@@ -42,6 +42,8 @@ const PASTA_DADOS = path.join(process.env.APPDATA || path.join(os.homedir(), '.c
 const ARQ_ESTADO = path.join(PASTA_DADOS, 'instalados.json');
 const ARQ_CACHE = path.join(PASTA_DADOS, 'jogos-cache.json');
 const ARQ_CONFIG = path.join(PASTA_DADOS, 'config.json');
+const ARQ_AVISOS = path.join(PASTA_DADOS, 'me-avise.json');
+const ARQ_GH_CACHE = path.join(PASTA_DADOS, 'github-cache.json');
 const PASTA_DOCUMENTOS = path.join(os.homedir(), 'Documents', 'TLW Games');
 let PASTA_PADRAO = PASTA_DOCUMENTOS; // vira ...\TLW Games\Games quando o launcher está instalado (veja mais abaixo)
 
@@ -92,7 +94,9 @@ const TOKEN = crypto.randomBytes(16).toString('hex');
 let catalogo = [];
 let online = false;
 let visual = {}; // cores, nome e logo (seção "launcher" do jogos.json)
-const downloads = new Map(); // id -> AbortController
+const downloads = new Map(); // id -> { fase, baixado, total, vel, posicao, controle, motivo, erro }
+const fila = [];             // ids esperando a vez (um download por vez)
+let ativo = null;            // id que está baixando/instalando agora
 const rodando = new Map();   // id -> processo do jogo
 const clientes = new Set();  // janelas abertas (eventos)
 
@@ -222,9 +226,30 @@ async function carregarCatalogo() {
   }
 }
 
+// "Em breve" de verdade: com data de lançamento, o jogo libera sozinho na hora marcada
+// (se o arquivo já estiver publicado). Sem data, vale a caixinha "Em breve" do Admin.
+function emBreve(j) {
+  const data = j.lancamento ? Date.parse(j.lancamento) : NaN;
+  const temDownload = [].concat(j.download || []).filter(Boolean).length > 0;
+  if (!Number.isNaN(data)) return Date.now() < data || !temDownload;
+  return !!j.emBreve;
+}
+
+const lerAvisos = () => { const a = lerJSON(ARQ_AVISOS, []); return Array.isArray(a) ? a : []; };
+
+function resumoDownload(id) {
+  const d = downloads.get(id);
+  if (!d) return null;
+  return { fase: d.fase, baixado: d.baixado || 0, total: d.total || 0, posicao: d.fase === 'fila' ? fila.indexOf(id) + 1 : 0, erro: d.erro || '' };
+}
+
 function combinar(j, inst) {
+  const breve = emBreve(j);
   return {
     ...j,
+    emBreve: breve,
+    avisar: lerAvisos().includes(j.id),
+    download: resumoDownload(j.id),
     instalado: inst ? {
       versao: inst.versao,
       tempoJogado: inst.tempoJogado || 0,
@@ -232,7 +257,7 @@ function combinar(j, inst) {
       ultimaVez: inst.ultimaVez || null,
       atalho: !!(inst.atalho && fs.existsSync(inst.atalho)),
     } : null,
-    atualizacao: !!(inst && !j.removido && !j.emBreve && compararVersao(j.versao, inst.versao) > 0),
+    atualizacao: !!(inst && !j.removido && !breve && compararVersao(j.versao, inst.versao) > 0),
     rodando: rodando.has(j.id),
     baixando: downloads.has(j.id),
   };
@@ -308,49 +333,144 @@ async function baixarComReserva(urls, destino, signal, aoProgredir) {
   throw erro;
 }
 
-// ───────────── ações ─────────────
+// ───────────── downloads: fila, pausar e continuar ─────────────
+// Um download por vez; os outros ficam na fila. O arquivo parcial fica em
+// <pasta dos jogos>\.baixando, junto com um .json que diz de qual versão ele é.
+// Pausar (ou a internet cair) guarda o que já baixou; continuar pede só o resto.
 
-async function instalar(id) {
-  if (downloads.has(id)) return { ok: false };
-  if (rodando.has(id)) throw new Error('Feche o jogo antes de atualizar.');
-  const jogo = catalogo.find((j) => j.id === id);
-  if (!jogo) throw new Error('Esse jogo não está na lista.');
-  if (jogo.emBreve) throw new Error('Esse jogo ainda não foi lançado.');
-  const urls = [].concat(jogo.download || []).filter(Boolean);
-  if (!urls.length) throw new Error('Esse jogo não tem link de download no jogos.json.');
+const ESPERAS_RECONECTAR = [2, 4, 8, 15, 30, 30, 60, 60]; // segundos
 
-  const controle = new AbortController();
-  downloads.set(id, controle);
-  avisarMudanca();
+function avisarDownload(id) {
+  const r = resumoDownload(id);
+  enviar('progresso', r ? { id, ...r, vel: (downloads.get(id) || {}).vel || 0 } : { id, fase: 'fim' });
+}
 
+function caminhosParcial(jogo, url) {
+  const base = path.join(pastaTemp(), `${nomePasta(jogo.id)}-${nomeDoArquivo(jogo, url)}`);
+  return { tmp: `${base}.parcial`, meta: `${base}.json` };
+}
+
+const esperar = (ms, signal) => new Promise((res, rej) => {
+  const t = setTimeout(res, ms);
+  signal.addEventListener('abort', () => { clearTimeout(t); rej(new Error('abortado')); }, { once: true });
+});
+
+const erroDeRede = (e) => /fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT|ECONNREFUSED|EAI_AGAIN|socket|terminated|other side closed|incompleto/i
+  .test(`${e && e.message} ${e && e.cause && (e.cause.code || e.cause.message)}`);
+
+// Baixa (ou continua baixando) um link pro arquivo tmp. Devolve quando terminar.
+async function baixarParte(url, tmp, d) {
+  let inicio = 0;
+  try { inicio = fs.statSync(tmp).size; } catch { inicio = 0; }
+  const r = await fetch(url, {
+    signal: d.controle.signal,
+    redirect: 'follow',
+    headers: inicio > 0 ? { Range: `bytes=${inicio}-` } : {},
+  });
+  if (r.status === 416) {
+    // O servidor diz que não tem mais nada depois do que já temos: o arquivo já está completo.
+    if (d.total && inicio === d.total) return;
+    await fsp.rm(tmp, { force: true });
+    throw Object.assign(new Error('incompleto'), { recomecar: true });
+  }
+  if (!r.ok) throw Object.assign(new Error(`O servidor respondeu com erro ${r.status}.`), { http: r.status });
+  let anexar = false;
+  if (r.status === 206) {
+    const m = /\/(\d+)\s*$/.exec(r.headers.get('content-range') || '');
+    d.total = m ? Number(m[1]) : inicio + (Number(r.headers.get('content-length')) || 0);
+    anexar = true;
+  } else {
+    d.total = Number(r.headers.get('content-length')) || 0; // o servidor não aceita continuar: recomeça
+    inicio = 0;
+  }
+  await fsp.writeFile(tmp, '', { flag: anexar ? 'a' : 'w' });
+  const saida = fs.createWriteStream(tmp, { flags: anexar ? 'a' : 'w' });
+  let erroGravar = null;
+  saida.on('error', (e) => { erroGravar = e; });
+  const leitor = r.body.getReader();
+  d.baixado = inicio;
+  let ultimoEnvio = 0;
+  let ultimoBaixado = inicio;
+  try {
+    for (;;) {
+      const { done, value } = await leitor.read();
+      if (done) break;
+      if (erroGravar) throw erroGravar;
+      d.baixado += value.length;
+      if (!saida.write(value)) {
+        await new Promise((res) => {
+          const pronto = () => { saida.off('drain', pronto); saida.off('error', pronto); res(); };
+          saida.on('drain', pronto);
+          saida.on('error', pronto);
+        });
+      }
+      const agora = Date.now();
+      if (agora - ultimoEnvio >= 250) {
+        if (ultimoEnvio) d.vel = ((d.baixado - ultimoBaixado) / (agora - ultimoEnvio)) * 1000;
+        ultimoEnvio = agora;
+        ultimoBaixado = d.baixado;
+        d.fase = 'baixando';
+        d.erro = '';
+        avisarDownload(d.id);
+      }
+    }
+  } finally {
+    await new Promise((res) => { if (saida.destroyed || erroGravar) res(); else saida.end(res); });
+  }
+  if (erroGravar) throw erroGravar;
+  if (d.total && d.baixado < d.total) throw new Error('O download veio incompleto.');
+}
+
+// Tenta os links (o 2º em diante é reserva) e, se a internet cair, espera e continua de onde parou.
+async function baixarComRetomada(urls, jogo, d) {
+  let tentativa = 0;
+  let iUrl = 0;
+  for (;;) {
+    const { tmp } = caminhosParcial(jogo, urls[0]);
+    try {
+      d.fase = 'baixando';
+      avisarDownload(d.id);
+      await baixarParte(urls[iUrl], tmp, d);
+      return tmp;
+    } catch (e) {
+      if (d.controle.signal.aborted) throw e;
+      if (e.http && e.http >= 400 && e.http < 500 && iUrl < urls.length - 1) { iUrl++; await fsp.rm(tmp, { force: true }); continue; }
+      if (e.recomecar) continue;
+      if (!erroDeRede(e) && !(e.http >= 500)) throw e;
+      if (tentativa >= ESPERAS_RECONECTAR.length) {
+        if (iUrl < urls.length - 1) { iUrl++; tentativa = 0; await fsp.rm(tmp, { force: true }); continue; }
+        throw Object.assign(new Error('A internet caiu e não voltou. O que já baixou ficou guardado: é só clicar em Continuar.'), { manterParcial: true });
+      }
+      const seg = ESPERAS_RECONECTAR[tentativa++];
+      d.fase = 'reconectando';
+      d.erro = `Sem conexão. Tentando de novo em ${seg}s…`;
+      d.vel = 0;
+      avisarDownload(d.id);
+      await esperar(seg * 1000, d.controle.signal);
+    }
+  }
+}
+
+async function instalarArquivo(jogo, tmp, nomeArq) {
+  const id = jogo.id;
   const pasta = pastaDoJogo(id);
   const nova = `${pasta}.novo`;
-  const nomeArq = nomeDoArquivo(jogo, urls[0]);
-  let tmp = path.join(pastaTemp(), `${path.basename(pasta)}-${nomeArq}`);
-
   try {
-    await fsp.mkdir(pastaTemp(), { recursive: true });
-    await baixarComReserva(urls, tmp, controle.signal, (baixado, total, vel) =>
-      enviar('progresso', { id, fase: 'baixando', baixado, total, vel }));
-
-    enviar('progresso', { id, fase: 'instalando' });
     await fsp.rm(nova, { recursive: true, force: true });
     await fsp.mkdir(nova, { recursive: true });
-
     const tipo = jogo.tipo || (/\.zip$/i.test(nomeArq) ? 'zip' : 'exe');
     let executavel;
     if (tipo === 'zip') {
       await extrairZip(tmp, nova);
+      await fsp.rm(tmp, { force: true });
       executavel = jogo.executavel ? path.normalize(jogo.executavel) : await acharExe(nova);
       if (!executavel || !fs.existsSync(path.join(nova, executavel))) {
         throw new Error('Não achei o .exe do jogo dentro do zip. Coloque o campo "executavel" no jogos.json.');
       }
     } else {
       await fsp.rename(tmp, path.join(nova, nomeArq));
-      tmp = null;
       executavel = nomeArq;
     }
-
     await fsp.rm(pasta, { recursive: true, force: true });
     await fsp.rename(nova, pasta);
 
@@ -372,19 +492,248 @@ async function instalar(id) {
     return { ok: true, atualizou: !!antes.versao };
   } catch (e) {
     await fsp.rm(nova, { recursive: true, force: true }).catch(() => {});
-    if (controle.signal.aborted) return { ok: false, cancelado: true };
-    if (e && ['EPERM', 'EACCES', 'ENOTDIR', 'EROFS', 'EBUSY'].includes(e.code)) {
-      throw new Error(`Não tenho permissão pra salvar na pasta dos jogos (${pastaJogos()}). Mude a pasta em Configurações.`);
-    }
-    if (e && e.code === 'ENOSPC') throw new Error('Não tem espaço suficiente no disco pra instalar esse jogo.');
     throw e;
-  } finally {
-    if (tmp) await fsp.rm(tmp, { force: true }).catch(() => {});
-    downloads.delete(id);
-    enviar('progresso', { id, fase: 'fim' });
-    avisarMudanca();
   }
 }
+
+function traduzirErro(e) {
+  if (e && ['EPERM', 'EACCES', 'ENOTDIR', 'EROFS', 'EBUSY'].includes(e.code)) {
+    return new Error(`Não tenho permissão pra salvar na pasta dos jogos (${pastaJogos()}). Mude a pasta em Configurações.`);
+  }
+  if (e && e.code === 'ENOSPC') return new Error('Não tem espaço suficiente no disco pra instalar esse jogo.');
+  return e;
+}
+
+async function executarDownload(id, d) {
+  const jogo = catalogo.find((j) => j.id === id);
+  if (!jogo || emBreve(jogo)) throw new Error(jogo ? 'Esse jogo ainda não foi lançado.' : 'Esse jogo não está na lista.');
+  const urls = [].concat(jogo.download || []).filter(Boolean);
+  if (!urls.length) throw new Error('Esse jogo não tem link de download no jogos.json.');
+  if (rodando.has(id)) throw new Error('Feche o jogo antes de atualizar.');
+
+  const { tmp, meta } = caminhosParcial(jogo, urls[0]);
+  await fsp.mkdir(pastaTemp(), { recursive: true });
+  const antigo = lerJSON(meta, null);
+  if (!antigo || antigo.versao !== jogo.versao) await fsp.rm(tmp, { force: true });
+  salvarJSON(meta, { id, versao: jogo.versao, urls });
+
+  try {
+    await baixarComRetomada(urls, jogo, d);
+  } catch (e) {
+    if (!d.controle.signal.aborted && !e.manterParcial) {
+      await fsp.rm(tmp, { force: true }).catch(() => {});
+      await fsp.rm(meta, { force: true }).catch(() => {});
+    }
+    throw e;
+  }
+  d.fase = 'instalando';
+  avisarDownload(id);
+  const r = await instalarArquivo(jogo, tmp, nomeDoArquivo(jogo, urls[0]));
+  await fsp.rm(tmp, { force: true }).catch(() => {});
+  await fsp.rm(meta, { force: true }).catch(() => {});
+  return r;
+}
+
+async function processarFila() {
+  if (ativo || !fila.length) return;
+  const id = fila.shift();
+  const d = downloads.get(id);
+  if (!d) { processarFila(); return; }
+  ativo = id;
+  d.controle = new AbortController();
+  d.motivo = '';
+  fila.forEach((x) => avisarDownload(x));
+  try {
+    const r = await executarDownload(id, d);
+    downloads.delete(id);
+    d.resolver(r);
+  } catch (e) {
+    if (d.controle.signal.aborted && d.motivo === 'pausa') {
+      d.fase = 'pausado'; d.vel = 0; d.erro = '';
+      d.resolver({ ok: false, pausado: true });
+    } else if (d.controle.signal.aborted) {
+      await apagarParcial(id);
+      downloads.delete(id);
+      d.resolver({ ok: false, cancelado: true });
+    } else if (e.manterParcial) {
+      d.fase = 'pausado'; d.vel = 0; d.erro = e.message;
+      d.rejeitar(e);
+    } else {
+      downloads.delete(id);
+      d.rejeitar(traduzirErro(e));
+    }
+  } finally {
+    ativo = null;
+    avisarDownload(id);
+    avisarMudanca();
+    processarFila();
+  }
+}
+
+async function apagarParcial(id) {
+  const jogo = catalogo.find((j) => j.id === id);
+  if (!jogo) return;
+  const urls = [].concat(jogo.download || []).filter(Boolean);
+  if (!urls.length) return;
+  const { tmp, meta } = caminhosParcial(jogo, urls[0]);
+  await fsp.rm(tmp, { force: true }).catch(() => {});
+  await fsp.rm(meta, { force: true }).catch(() => {});
+}
+
+// Instalar, atualizar ou continuar um download pausado. A promessa termina quando o
+// jogo estiver instalado (ou for pausado/cancelado).
+function instalar(id) {
+  const atual = downloads.get(id);
+  if (atual && atual.fase !== 'pausado') return Promise.resolve({ ok: false, jaNaFila: true });
+  const jogo = catalogo.find((j) => j.id === id);
+  if (!jogo) return Promise.reject(new Error('Esse jogo não está na lista.'));
+  if (emBreve(jogo)) return Promise.reject(new Error('Esse jogo ainda não foi lançado.'));
+  if (rodando.has(id)) return Promise.reject(new Error('Feche o jogo antes de atualizar.'));
+  const d = atual || { id, baixado: 0, total: 0, vel: 0 };
+  d.fase = 'fila';
+  d.erro = '';
+  downloads.set(id, d);
+  const promessa = new Promise((res, rej) => { d.resolver = res; d.rejeitar = rej; });
+  fila.push(id);
+  avisarDownload(id);
+  avisarMudanca();
+  processarFila();
+  return promessa;
+}
+
+function pausar(id) {
+  const d = downloads.get(id);
+  if (!d) return {};
+  if (ativo === id) {
+    if (d.fase === 'instalando') return {}; // já está terminando
+    d.motivo = 'pausa';
+    d.controle.abort();
+  } else if (d.fase === 'fila') {
+    fila.splice(fila.indexOf(id), 1);
+    d.fase = 'pausado';
+    if (d.resolver) d.resolver({ ok: false, pausado: true });
+    avisarDownload(id);
+    fila.forEach((x) => avisarDownload(x));
+  }
+  return {};
+}
+
+async function cancelar(id) {
+  const d = downloads.get(id);
+  if (!d) return {};
+  if (ativo === id) {
+    if (d.fase === 'instalando') return {};
+    d.motivo = 'cancelar';
+    d.controle.abort();
+    return {};
+  }
+  if (d.fase === 'fila') fila.splice(fila.indexOf(id), 1);
+  if (d.resolver) d.resolver({ ok: false, cancelado: true });
+  downloads.delete(id);
+  await apagarParcial(id);
+  avisarDownload(id);
+  fila.forEach((x) => avisarDownload(x));
+  avisarMudanca();
+  return {};
+}
+
+// Ao abrir: downloads que ficaram pela metade aparecem como "Pausado".
+async function restaurarPausados() {
+  let itens = [];
+  try { itens = await fsp.readdir(pastaTemp()); } catch { return; }
+  for (const nome of itens.filter((n) => n.endsWith('.json'))) {
+    const meta = lerJSON(path.join(pastaTemp(), nome), null);
+    const jogo = meta && catalogo.find((j) => j.id === meta.id);
+    if (!jogo || meta.versao !== jogo.versao || downloads.has(jogo.id)) continue;
+    const { tmp } = caminhosParcial(jogo, [].concat(jogo.download || [])[0] || '');
+    let baixado = 0;
+    try { baixado = fs.statSync(tmp).size; } catch { continue; }
+    downloads.set(jogo.id, { id: jogo.id, fase: 'pausado', baixado, total: 0, vel: 0, erro: '' });
+  }
+  avisarMudanca();
+}
+
+// ───────────── contador de downloads e histórico (releases do GitHub) ─────────────
+
+function repoDoJogo(j) {
+  const link = [].concat(j.download || []).find((u) => /github\.com\/[^/]+\/[^/]+\/releases\//.test(u || ''));
+  const m = link && /github\.com\/([^/]+)\/([^/]+)\/releases\//.exec(link);
+  if (m) return `${m[1]}/${m[2]}`;
+  if (j.repo) return j.repo.includes('/') ? j.repo : `${REPO.split('/')[0]}/${j.repo}`;
+  return null;
+}
+
+async function extrasDoJogo(id) {
+  const j = catalogo.find((x) => x.id === id) || ((lerEstado()[id] || {}).info);
+  const repo = j && repoDoJogo(j);
+  if (!repo) return {};
+  const cache = lerJSON(ARQ_GH_CACHE, {});
+  const c = cache[repo];
+  if (c && Date.now() - c.em < 60 * 60 * 1000) return c.dados; // guarda por 1 hora
+  try {
+    const r = await fetch(`${GH_API}/repos/${repo}/releases?per_page=100`, {
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'TLW-Games-Launcher' },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!r.ok) throw new Error(String(r.status));
+    const releases = (await r.json()).filter((x) => !x.draft);
+    const dados = {
+      downloads: releases.reduce((n, x) => n + (x.assets || []).reduce((m, a) => m + (a.download_count || 0), 0), 0),
+      historico: releases
+        .map((x) => ({ versao: String(x.tag_name || '').replace(/^v/i, ''), titulo: x.name || '', data: x.published_at || x.created_at, notas: String(x.body || '').trim() }))
+        .sort((a, b) => Date.parse(b.data) - Date.parse(a.data)),
+    };
+    cache[repo] = { em: Date.now(), dados };
+    salvarJSON(ARQ_GH_CACHE, cache);
+    return dados;
+  } catch {
+    return c ? c.dados : {};
+  }
+}
+
+// ───────────── "Me avise" ─────────────
+
+const timersLancamento = new Map();
+
+function avisar(id, ligado) {
+  const lista = new Set(lerAvisos());
+  if (ligado) lista.add(id); else lista.delete(id);
+  salvarJSON(ARQ_AVISOS, [...lista]);
+  agendarLancamentos();
+  avisarMudanca();
+  return { avisar: !!ligado };
+}
+
+function conferirLancamentos() {
+  const lista = lerAvisos();
+  const sobra = [];
+  for (const id of lista) {
+    const j = catalogo.find((x) => x.id === id);
+    if (!j) continue;
+    if (emBreve(j)) { sobra.push(id); continue; }
+    if (casca) casca.notificar(`${j.nome} chegou! 🎉`, 'Já dá pra instalar no TLW Games Launcher.');
+    enviar('lancou', { id, nome: j.nome });
+  }
+  if (sobra.length !== lista.length) { salvarJSON(ARQ_AVISOS, sobra); avisarMudanca(); }
+}
+
+// Se um jogo com "Me avise" sai nas próximas 24h, marca um despertador pra hora exata.
+function agendarLancamentos() {
+  for (const id of lerAvisos()) {
+    const j = catalogo.find((x) => x.id === id);
+    const quando = j && j.lancamento ? Date.parse(j.lancamento) : NaN;
+    const falta = quando - Date.now();
+    if (Number.isNaN(quando) || falta <= 0 || falta > 24 * 3600 * 1000 || timersLancamento.has(id)) continue;
+    timersLancamento.set(id, setTimeout(async () => {
+      timersLancamento.delete(id);
+      await carregarCatalogo().catch(() => {});
+      conferirLancamentos();
+      avisarMudanca();
+    }, falta + 3000));
+  }
+}
+
+// ───────────── jogar ─────────────
 
 async function jogar(id) {
   if (rodando.has(id)) return {};
@@ -414,6 +763,7 @@ async function jogar(id) {
       est[id].ultimaVez = Date.now();
       salvarEstado(est);
     }
+    atualizarRecentes();
     avisarMudanca();
   });
   return {};
@@ -513,6 +863,7 @@ function ponteDoNavegador(TOKEN) {
     aoEvento: (nome, cb) => fonte.addEventListener(nome, (e) => cb(JSON.parse(e.data))),
     aoProgresso: (cb) => fonte.addEventListener('progresso', (e) => cb(JSON.parse(e.data))),
     aoMudar: (cb) => fonte.addEventListener('mudou', () => cb()),
+    pausar: (id) => api('pausar', { id }),
   };
 
   // Avisa na tela se o motor for fechado.
@@ -795,7 +1146,7 @@ async function mudarPasta({ pasta, escolher }) {
   pasta = path.resolve(String(pasta).trim());
   const antiga = path.resolve(pastaJogos());
   if (antiga.toLowerCase() === pasta.toLowerCase()) return verConfig();
-  if (downloads.size) throw new Error('Espere os downloads terminarem antes de mudar a pasta.');
+  if (downloads.size) throw new Error('Termine ou cancele os downloads (inclusive os pausados) antes de mudar a pasta.');
   if (rodando.size) throw new Error('Feche os jogos antes de mudar a pasta.');
   const dentro = path.relative(antiga, pasta);
   if (dentro && !dentro.startsWith('..') && !path.isAbsolute(dentro)) {
@@ -847,6 +1198,8 @@ const avisados = new Set();
 
 async function verificarJogos() {
   await carregarCatalogo();
+  conferirLancamentos();
+  agendarLancamentos();
   const cfg = lerConfig();
   const visivel = casca && casca.janelaVisivel();
   const pendentes = montarLista().filter((j) => j.atualizacao && !j.rodando && !downloads.has(j.id));
@@ -864,13 +1217,31 @@ async function verificarJogos() {
   avisarMudanca();
 }
 
+// ───────────── jogar pelo ícone perto do relógio ─────────────
+
+function atualizarRecentes() {
+  if (!casca || !casca.definirRecentes) return;
+  const est = lerEstado();
+  const lista = Object.entries(est)
+    .filter(([, inst]) => inst.ultimaVez)
+    .sort((a, b) => b[1].ultimaVez - a[1].ultimaVez)
+    .slice(0, 5)
+    .map(([id, inst]) => ({ id, nome: (inst.info && inst.info.nome) || id }));
+  casca.definirRecentes(lista);
+}
+
+global.tlwJogar = (id) => jogar(id).catch((e) => { if (casca) casca.notificar('Não consegui abrir o jogo', e.message); });
+
 // ───────────── servidor local ─────────────
 
 const ACOES = {
   catalogo: async () => { await carregarCatalogo(); return { jogos: montarLista(), online, visual }; },
   lista: async () => ({ jogos: montarLista(), online, visual }),
   instalar: ({ id }) => instalar(id),
-  cancelar: async ({ id }) => { const c = downloads.get(id); if (c) c.abort(); return {}; },
+  cancelar: ({ id }) => cancelar(id),
+  pausar: async ({ id }) => pausar(id),
+  extras: ({ id }) => extrasDoJogo(id),
+  avisar: async ({ id, ligado }) => avisar(id, ligado),
   jogar: ({ id }) => jogar(id),
   desinstalar: ({ id }) => desinstalar(id),
   'abrir-pasta': ({ id }) => abrirPasta(id),
@@ -948,6 +1319,9 @@ servidor.on('error', (e) => {
 
 servidor.listen(PORTA, '127.0.0.1', async () => {
   await carregarCatalogo();
+  await restaurarPausados().catch(() => {});
+  agendarLancamentos();
+  atualizarRecentes();
   if (casca) {
     casca.aplicarConfig(lerConfig());
     setTimeout(() => verificarJogos().catch(() => {}), 5000);
@@ -963,7 +1337,7 @@ setInterval(() => {
   if (process.env.TLW_SEM_JANELA) return;
   const ocioso = clientes.size === 0 && Date.now() - ultimoCliente > 10000;
   if (ocioso && rodando.size === 0) {
-    for (const c of downloads.values()) c.abort();
+    for (const d of downloads.values()) { if (d.controle) { d.motivo = 'pausa'; d.controle.abort(); } }
     setTimeout(() => process.exit(0), 300);
   }
 }, 3000);
