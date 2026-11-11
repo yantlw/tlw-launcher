@@ -475,7 +475,6 @@ body.modo-grade .lateral { display: none; }
 .secao { padding: 18px 20px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
 .secao h3 { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
 .secao h3 .qtd { letter-spacing: .02em; text-transform: none; font-weight: 600; color: var(--txt2); }
-.secao .mais { margin-top: 12px; color: var(--acento); font-weight: 700; font-size: 13px; }
 .info { padding-bottom: 18px; }
 
 .galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
@@ -497,16 +496,6 @@ body.modo-grade .lateral { display: none; }
 .visor-fechar:hover { background: rgba(255, 255, 255, .18); }
 .visor-cont { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; color: var(--txt2); font-size: 13px; }
 
-.historico { display: flex; flex-direction: column; }
-.versao { padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, .05); }
-.versao:first-child { border-top: 0; padding-top: 0; }
-.versao-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.versao-topo b { font-size: 15px; }
-.versao-topo .data { color: var(--txt3); font-size: 12.5px; }
-.tag { padding: 1px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: color-mix(in srgb, var(--acento) 18%, transparent); color: color-mix(in srgb, var(--acento) 65%, white); }
-.tag.verde { background: rgba(51, 209, 122, .14); color: #7fe3ab; }
-.versao p { margin-top: 6px; color: #c6cad6; white-space: pre-line; user-select: text; }
-.versao p:empty { display: none; }
 
 
 @media (max-width: 1100px) {
@@ -931,10 +920,8 @@ function renderDetalhe() {
     </section>
     <div class="secoes">
       ${secaoGaleria(j)}
-      <section class="secao" id="historico"></section>
     </div>`;
   renderAcao(true);
-  renderHistorico(j);
   carregarExtras(j.id);
 }
 
@@ -990,43 +977,16 @@ function moverVisor(d) {
 function fecharVisor() { const el = $('#visor'); if (el) el.classList.remove('aberto'); }
 const visorAberto = () => { const el = $('#visor'); return !!(el && el.classList.contains('aberto')); };
 
-// ───────────── histórico de atualizações e contador (GitHub) ─────────────
+// ───────────── contador de downloads (GitHub) ─────────────
 
 ui.extras = {};
-ui.historicoTodos = {};
 
 async function carregarExtras(id) {
   if (ui.extras[id]) return;
   ui.extras[id] = { carregando: true };
   try { ui.extras[id] = await tlw.chamar('extras', { id }); } catch { ui.extras[id] = {}; }
   const j = jogoSel();
-  if (j && j.id === id && !naGrade()) { renderAcao(true); renderHistorico(j); }
-}
-
-function limparNotas(t) {
-  return String(t || '').replace(/\r/g, '').replace(/^#+\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/^\s*[-*]\s+/gm, '• ').trim();
-}
-
-function renderHistorico(j) {
-  const el = $('#historico');
-  if (!el) return;
-  const ex = ui.extras[j.id] || {};
-  let lista = ex.historico && ex.historico.length ? ex.historico : [];
-  if (!lista.length && j.versao && !j.emBreve) lista = [{ versao: j.versao, notas: j.notas || '', data: null }];
-  if (!lista.length) { el.style.display = 'none'; return; }
-  el.style.display = '';
-  const todos = ui.historicoTodos[j.id];
-  const mostrar = todos ? lista : lista.slice(0, 3);
-  const instalada = j.instalado && j.instalado.versao;
-  el.innerHTML = `<h3>Histórico de atualizações <span class="qtd">${lista.length} ${lista.length === 1 ? 'versão' : 'versões'}</span></h3>
-    <div class="historico">${mostrar.map((v) => `<div class="versao">
-      <div class="versao-topo"><b>Versão ${esc(v.versao)}</b>
-        ${v.data ? `<span class="data">${esc(new Date(v.data).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }))}</span>` : ''}
-        ${String(v.versao) === String(j.versao) ? '<span class="tag">mais nova</span>' : ''}
-        ${instalada && String(v.versao) === String(instalada) ? '<span class="tag verde">instalada</span>' : ''}</div>
-      <p>${esc(limparNotas(v.notas))}</p></div>`).join('')}</div>
-    ${lista.length > 3 ? `<button type="button" class="mais" data-historico>${todos ? 'Mostrar menos' : `Ver todas as ${lista.length} versões`}</button>` : ''}`;
+  if (j && j.id === id && !naGrade()) renderAcao(true);
 }
 
 function renderAcao(forcar) {
@@ -1339,16 +1299,10 @@ $('#detalhe').addEventListener('click', async (e) => {
   return undefined;
 });
 
-// Galeria e histórico (cliques dentro da página do jogo).
+// Galeria (cliques dentro da página do jogo).
 $('#detalhe').addEventListener('click', (e) => {
   const f = e.target.closest('[data-foto]');
-  if (f) { const j = jogoSel(); if (j) abrirVisor(fotosDe(j), Number(f.dataset.foto)); return; }
-  if (e.target.closest('[data-historico]')) {
-    const j = jogoSel();
-    if (!j) return;
-    ui.historicoTodos[j.id] = !ui.historicoTodos[j.id];
-    renderHistorico(j);
-  }
+  if (f) { const j = jogoSel(); if (j) abrirVisor(fotosDe(j), Number(f.dataset.foto)); }
 });
 
 document.addEventListener('keydown', (e) => {
