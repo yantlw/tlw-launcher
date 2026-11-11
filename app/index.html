@@ -365,6 +365,98 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 ::-webkit-scrollbar-thumb { background: #262c3a; border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: #333b4d; }
 
+
+/* ───────── organizar / modos ───────── */
+.ferramentas { display: flex; gap: 6px; margin: 0 4px 12px; }
+.org { position: relative; flex: 1; min-width: 0; }
+.org-btn { width: 100%; height: 34px; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-radius: 8px;
+  background: var(--painel); border: 1px solid var(--borda); color: var(--txt2); font-size: 12.5px; font-weight: 600; }
+.org-btn:hover, .org.aberto .org-btn { color: var(--txt); border-color: #343b4c; }
+.org-btn span { flex: 1; min-width: 0; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.org-btn svg { width: 16px; height: 16px; }
+.org-btn .seta-baixo { width: 14px; height: 14px; transition: transform .15s; }
+.org.aberto .seta-baixo { transform: rotate(180deg); }
+.org-menu, .menu { display: none; position: absolute; z-index: 30; min-width: 230px; padding: 6px; border-radius: 10px;
+  background: #1a1f2a; border: 1px solid #2c3343; box-shadow: 0 18px 40px rgba(0, 0, 0, .5); }
+.org-menu { top: calc(100% + 6px); left: 0; }
+.org.aberto .org-menu, .extras.aberto .menu { display: block; }
+.org-titulo { padding: 8px 10px 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
+.org-menu button, .menu button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px;
+  text-align: left; font-size: 13px; color: #d5d9e3; }
+.org-menu button:hover, .menu button:hover { background: rgba(255, 255, 255, .07); }
+.org-menu button::before { content: ""; width: 14px; flex: none; text-align: center; color: var(--acento); font-weight: 900; }
+.org-menu button.on::before { content: "✓"; }
+.org-menu button.on { color: #fff; font-weight: 600; }
+.modos { display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--painel); border: 1px solid var(--borda); flex: none; }
+.modos button { width: 30px; height: 28px; display: grid; place-items: center; border-radius: 6px; color: var(--txt3); }
+.modos button svg { width: 16px; height: 16px; }
+.modos button:hover { color: var(--txt); }
+.modos button.on { background: var(--painel2); color: var(--txt); box-shadow: inset 0 0 0 1px #343b4c; }
+.lateral-titulo .qtd { color: var(--txt3); font-weight: 600; letter-spacing: 0; }
+.lateral-titulo + .item { margin-top: 0; }
+.lista .lateral-titulo:not(:first-child) { margin-top: 12px; }
+.limpar-filtro { margin-top: 6px; color: var(--acento); font-weight: 600; font-size: 13px; }
+
+/* ───────── modo grade ───────── */
+body.modo-grade .corpo { grid-template-columns: 1fr; }
+body.modo-grade .lateral { display: none; }
+.grade-pagina { padding: 26px 30px 50px; }
+.grade-topo { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+.grade-topo h2 { font: 900 24px var(--titulo); margin-right: auto; }
+.grade-topo h2 .qtd { font: 600 14px "Segoe UI", system-ui, sans-serif; color: var(--txt3); margin-left: 8px; }
+.grade-topo .busca { margin: 0; width: 240px; }
+.grade-topo .org { flex: none; width: 230px; }
+.grade-topo .org-menu { left: auto; right: 0; }
+.grade-secao { margin: 26px 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt2); }
+.grade-secao:first-child { margin-top: 0; }
+.grade-secao .qtd { color: var(--txt3); }
+.grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px 18px; }
+.card { cursor: pointer; outline: none; min-width: 0; }
+.card-capa { position: relative; border-radius: 10px; overflow: hidden; background: var(--painel2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35); transition: transform .18s ease, box-shadow .18s ease; }
+.card:hover .card-capa, .card:focus-visible .card-capa { transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .5), 0 0 0 2px color-mix(in srgb, var(--acento) 70%, transparent); }
+.arte.card-arte { width: 100%; aspect-ratio: 16 / 9; }
+.arte.card-arte .ini { font-size: 46px; letter-spacing: -.03em; }
+.card:not(.instalado):not(.rodando):not(.atualizar) .card-capa .arte-img { filter: saturate(.8) brightness(.88); }
+.card-rapido { position: absolute; right: 10px; bottom: 10px; width: 44px; height: 44px; display: grid; place-items: center;
+  border-radius: 50%; opacity: 0; transform: translateY(6px) scale(.9); transition: opacity .15s, transform .15s;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
+.card-rapido svg { width: 20px; height: 20px; }
+.card:hover .card-rapido, .card:focus-within .card-rapido { opacity: 1; transform: none; }
+.card-rapido.jogar { background: linear-gradient(180deg, #45e08a, #1fb866); color: #04230f; }
+.card-rapido.instalar { background: var(--acento); color: #fff; }
+.card-rapido.atualizar { background: linear-gradient(180deg, #ffcb45, #f0a300); color: #2a1b00; }
+.card-rapido:hover { filter: brightness(1.12); }
+.card-selo { position: absolute; left: 10px; top: 10px; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  letter-spacing: .06em; text-transform: uppercase; background: rgba(8, 10, 14, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.card-selo.atualizar { color: #ffd36b; }
+.card-selo.rodando { color: #7fe3ab; }
+.card-selo.embreve { color: var(--txt2); }
+.card-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: rgba(0, 0, 0, .55); display: none; }
+.card.ocupado .card-prog { display: block; }
+.card-prog div { height: 100%; width: 0; background: linear-gradient(90deg, var(--acento), var(--acento2)); transition: width .25s; }
+.card-nome { margin-top: 10px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-sub { font-size: 12.5px; color: var(--txt3); }
+.card.instalado .card-sub, .card.rodando .card-sub { color: var(--verde); }
+.card.atualizar .card-sub { color: var(--acento2); }
+.card.ocupado .card-sub { color: var(--acento); }
+.grade-vazia { padding: 60px 20px; text-align: center; color: var(--txt2); }
+.voltar { position: absolute; top: 14px; left: 16px; z-index: 3; height: 34px; display: flex; align-items: center; gap: 6px;
+  padding: 0 14px 0 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff;
+  background: rgba(8, 10, 14, .62); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, .1); }
+.voltar:hover { background: rgba(8, 10, 14, .85); }
+.voltar svg { width: 18px; height: 18px; }
+
+/* ───────── menu ⚙ do jogo ───────── */
+.extras { position: relative; }
+.menu { top: calc(100% + 8px); right: 0; min-width: 300px; }
+.menu button svg { width: 17px; height: 17px; color: var(--txt2); }
+.menu button.perigo, .menu button.perigo svg { color: #ff7d8a; }
+.menu hr { border: 0; height: 1px; margin: 5px 4px; background: #2c3343; }
+.menu .feito { margin-left: auto; font-size: 11px; color: var(--verde); font-weight: 700; }
+.extras.aberto .menu-btn { background: rgba(255, 255, 255, .18); }
+
 @media (max-width: 1100px) {
   .info { grid-template-columns: 1fr; }
   .stats { column-gap: 22px; }
@@ -409,12 +501,18 @@ body.ver-config .config-pagina { display: block; }
 .btn-peq:disabled { opacity: .5; cursor: default; }
 .btn-peq.destaque { background: var(--acento); border-color: transparent; color: #fff; }
 .aviso-exe { margin-bottom: 18px; padding: 11px 14px; border-radius: 10px; font-size: 13px; background: rgba(255, 184, 0, .08); border: 1px solid rgba(255, 184, 0, .25); color: #ffd36b; }
+
+/* ícones das abas */
+.abas .aba { display: flex; align-items: center; gap: 8px; }
+.abas .aba svg { width: 17px; height: 17px; opacity: .85; }
+.abas .aba[data-aba="config"] svg { transition: transform .4s ease; }
+.abas .aba[data-aba="config"]:hover svg, .abas .aba[data-aba="config"].ativa svg { transform: rotate(60deg); }
 </style>
 </head>
 <body>
 <header class="topo">
     <div class="marca"><span class="marca-tlw">TLW</span><span class="marca-games">GAMES</span></div>
-    <nav class="abas"><button class="aba ativa" type="button" data-aba="biblioteca">Biblioteca</button><button class="aba" type="button" data-aba="config">Configurações</button></nav>
+    <nav class="abas"><button class="aba ativa" type="button" data-aba="biblioteca"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Biblioteca</button><button class="aba" type="button" data-aba="config"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.7 7.7 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Configurações</button></nav>
     <div class="topo-dir">
       <span id="status" class="status"></span>
       <button id="btn-recarregar" class="icone" type="button" title="Procurar jogos e atualizações"></button>
@@ -423,8 +521,8 @@ body.ver-config .config-pagina { display: block; }
 
   <div class="corpo">
     <aside class="lateral">
-      <input id="busca" class="busca" type="search" placeholder="Buscar jogo…" autocomplete="off">
-      <div class="lateral-titulo">Seus jogos</div>
+      <input id="busca" class="busca" data-busca type="search" placeholder="Buscar jogo…" autocomplete="off">
+      <div class="ferramentas" id="ferr-lista"></div>
       <div id="lista" class="lista"></div>
     </aside>
     <main id="detalhe" class="detalhe">
@@ -447,6 +545,19 @@ if (!window.tlw) {
 }
 
 const ui = { jogos: [], online: false, selecionado: null, progresso: {}, busca: '' };
+
+// Como a pessoa prefere ver a biblioteca (fica salvo neste computador).
+const PREFS = 'tlw-biblioteca';
+Object.assign(ui, { modo: 'lista', ordem: 'padrao', filtro: 'todos', gradeAberta: false, orgAberto: false, menuAberto: false });
+try {
+  const salvo = JSON.parse(localStorage.getItem(PREFS)) || {};
+  if (['lista', 'grade'].includes(salvo.modo)) ui.modo = salvo.modo;
+  if (typeof salvo.ordem === 'string') ui.ordem = salvo.ordem;
+  if (typeof salvo.filtro === 'string') ui.filtro = salvo.filtro;
+} catch { /* sem preferências salvas */ }
+const salvarPrefs = () => {
+  try { localStorage.setItem(PREFS, JSON.stringify({ modo: ui.modo, ordem: ui.ordem, filtro: ui.filtro })); } catch { /* ok */ }
+};
 const $ = (s) => document.querySelector(s);
 
 // ───────────── formatação ─────────────
@@ -497,6 +608,14 @@ const ICONES = {
   calendario: '<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 10h17M8 3v4m8-4v4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
   disco: '<svg viewBox="0 0 24 24"><path d="M4 14.5 6.2 6a1.5 1.5 0 0 1 1.45-1.1h8.7A1.5 1.5 0 0 1 17.8 6L20 14.5v3.1a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.6zm0 0h16M16.5 16.8h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   etiqueta: '<svg viewBox="0 0 24 24"><path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6a1.5 1.5 0 0 1 1.06.44l6.4 6.4a1.5 1.5 0 0 1 0 2.12l-7.6 7.6a1.5 1.5 0 0 1-2.12 0l-6.4-6.4a1.5 1.5 0 0 1-.44-1.06zM8 8h.01" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  engrenagem: '<svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.7 7.7 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  atalho: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4M10 13l4-4m0 0h-3.2M14 9v3.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  escudo: '<svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.8 12 2.2 2.2 4.4-4.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  lista: '<svg viewBox="0 0 24 24"><path d="M8.5 6h12M8.5 12h12M8.5 18h12M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  grade: '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+  ordenar: '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  setaBaixo: '<svg class="seta-baixo" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  voltar: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   recarregar: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 const icone = (n) => ICONES[n] || '';
@@ -553,21 +672,159 @@ function situacao(j) {
   return ['Não instalado', ''];
 }
 
+// ───────────── organizar a biblioteca ─────────────
+
+const ORDENS = [
+  ['padrao', 'Ordem da TLW'],
+  ['az', 'Nome (A–Z)'],
+  ['za', 'Nome (Z–A)'],
+  ['instalados', 'Instalados primeiro'],
+  ['recentes', 'Jogados recentemente'],
+  ['tempo', 'Mais jogados'],
+];
+const FILTROS = [['todos', 'Todos os jogos'], ['instalados', 'Só instalados'], ['nao', 'Não instalados']];
+
+const normalizar = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const porNome = (a, b) => a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' });
+
+// Devolve os jogos já filtrados e ordenados, em seções ([{ titulo, jogos }]).
+function secoes() {
+  const termo = normalizar(ui.busca.trim());
+  let js = ui.jogos.filter((j) => !termo || normalizar(j.nome).includes(termo));
+  if (ui.filtro === 'instalados') js = js.filter((j) => j.instalado);
+  if (ui.filtro === 'nao') js = js.filter((j) => !j.instalado);
+  const ultima = (j) => (j.instalado && j.instalado.ultimaVez) || 0;
+  const tempo = (j) => (j.instalado && j.instalado.tempoJogado) || 0;
+  if (ui.ordem === 'az') js.sort(porNome);
+  if (ui.ordem === 'za') js.sort((a, b) => porNome(b, a));
+  if (ui.ordem === 'recentes') js.sort((a, b) => ultima(b) - ultima(a) || porNome(a, b));
+  if (ui.ordem === 'tempo') js.sort((a, b) => tempo(b) - tempo(a) || porNome(a, b));
+  if (ui.ordem === 'instalados') {
+    return [
+      ['Instalados', js.filter((j) => j.instalado)],
+      ['Disponíveis', js.filter((j) => !j.instalado && !j.emBreve)],
+      ['Em breve', js.filter((j) => !j.instalado && j.emBreve)],
+    ].filter(([, l]) => l.length).map(([titulo, jogos]) => ({ titulo, jogos }));
+  }
+  return js.length ? [{ titulo: null, jogos: js }] : [];
+}
+
+function ferramentasHTML(comBusca) {
+  const ordem = (ORDENS.find(([k]) => k === ui.ordem) || ORDENS[0])[1];
+  const filtro = ui.filtro !== 'todos' ? ` · ${(FILTROS.find(([k]) => k === ui.filtro) || [])[1] || ''}` : '';
+  return `${comBusca ? `<input class="busca" data-busca type="search" placeholder="Buscar jogo…" autocomplete="off" value="${esc(ui.busca)}">` : ''}
+    <div class="org ${ui.orgAberto ? 'aberto' : ''}">
+      <button type="button" class="org-btn" data-organizar title="Organizar a biblioteca">${icone('ordenar')}<span>${esc(ordem + filtro)}</span>${icone('setaBaixo')}</button>
+      <div class="org-menu">
+        <div class="org-titulo">Ordenar por</div>
+        ${ORDENS.map(([k, n]) => `<button type="button" data-ordem="${k}" class="${k === ui.ordem ? 'on' : ''}">${n}</button>`).join('')}
+        <div class="org-titulo">Mostrar</div>
+        ${FILTROS.map(([k, n]) => `<button type="button" data-filtro="${k}" class="${k === ui.filtro ? 'on' : ''}">${n}</button>`).join('')}
+      </div>
+    </div>
+    <div class="modos">
+      <button type="button" data-vista="lista" title="Ver em lista" class="${ui.modo === 'lista' ? 'on' : ''}">${icone('lista')}</button>
+      <button type="button" data-vista="grade" title="Ver em grade" class="${ui.modo === 'grade' ? 'on' : ''}">${icone('grade')}</button>
+    </div>`;
+}
+
+function renderFerramentas() {
+  $('#ferr-lista').innerHTML = ferramentasHTML(false);
+  const g = $('#ferr-grade');
+  if (g) g.innerHTML = ferramentasHTML(true);
+}
+
+function vazioFiltrado() {
+  if (!ui.jogos.length) return 'Nenhum jogo na lista ainda.';
+  return `Nenhum jogo encontrado.${ui.filtro !== 'todos' || ui.busca ? '<br><button type="button" class="limpar-filtro" data-limpar>Mostrar todos os jogos</button>' : ''}`;
+}
+
 function renderLista() {
-  const termo = ui.busca.trim().toLowerCase();
-  const itens = ui.jogos.filter((j) => !termo || j.nome.toLowerCase().includes(termo));
-  $('#lista').innerHTML = itens.length
-    ? itens.map((j) => {
-      const [sub, cls] = situacao(j);
-      return `<button type="button" class="item ${j.id === ui.selecionado ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
+  const grupos = secoes();
+  $('#lista').innerHTML = grupos.length
+    ? grupos.map(({ titulo, jogos }) => `<div class="lateral-titulo">${titulo || 'Seus jogos'} <span class="qtd">(${jogos.length})</span></div>`
+      + jogos.map((j) => {
+        const [sub, cls] = situacao(j);
+        return `<button type="button" class="item ${j.id === ui.selecionado ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
           ${arte(j, 'mini')}
           <span class="item-txt"><span class="item-nome">${esc(j.nome)}</span><span class="item-sub">${sub}</span></span>
         </button>`;
-    }).join('')
-    : `<p class="vazio-lista">${termo ? 'Nenhum jogo encontrado.' : 'Nenhum jogo na lista ainda.'}</p>`;
+      }).join('')).join('')
+    : `<p class="vazio-lista">${vazioFiltrado()}</p>`;
+}
+
+// ───────────── modo grade ─────────────
+
+function botaoRapido(j) {
+  if (ui.progresso[j.id] || j.rodando || j.emBreve) return '';
+  if (j.atualizacao) return `<button type="button" class="card-rapido atualizar" data-acao="instalar" data-id="${esc(j.id)}" title="Atualizar">${icone('baixar')}</button>`;
+  if (j.instalado) return `<button type="button" class="card-rapido jogar" data-acao="jogar" data-id="${esc(j.id)}" title="Jogar">${icone('play')}</button>`;
+  return `<button type="button" class="card-rapido instalar" data-acao="instalar" data-id="${esc(j.id)}" title="Instalar">${icone('baixar')}</button>`;
+}
+
+function seloCard(j) {
+  if (j.rodando) return '<span class="card-selo rodando">Jogando</span>';
+  if (j.atualizacao) return '<span class="card-selo atualizar">Atualização</span>';
+  if (j.emBreve) return '<span class="card-selo embreve">Em breve</span>';
+  return '';
+}
+
+function cardHTML(j) {
+  const [sub, cls] = situacao(j);
+  const p = ui.progresso[j.id];
+  return `<div class="card ${cls}" data-card="${esc(j.id)}" tabindex="0" title="${esc(j.nome)}">
+    <div class="card-capa">${arte(j, 'card-arte')}${seloCard(j)}${botaoRapido(j)}
+      <div class="card-prog"><div style="width:${p ? (p.fase === 'instalando' ? 100 : pct(p)) : 0}%"></div></div></div>
+    <div class="card-nome">${esc(j.nome)}</div>
+    <div class="card-sub">${sub}</div>
+  </div>`;
+}
+
+function renderGradeItens() {
+  const el = $('#grade-itens');
+  if (!el) return;
+  const grupos = secoes();
+  const qtd = grupos.reduce((n, g) => n + g.jogos.length, 0);
+  const q = $('#grade-qtd');
+  if (q) q.textContent = `(${qtd})`;
+  el.innerHTML = grupos.length
+    ? grupos.map(({ titulo, jogos }) => `${titulo ? `<h3 class="grade-secao">${titulo} <span class="qtd">(${jogos.length})</span></h3>` : ''}
+      <div class="grade">${jogos.map(cardHTML).join('')}</div>`).join('')
+    : `<div class="grade-vazia">${vazioFiltrado()}</div>`;
+}
+
+function renderGrade() {
+  $('#detalhe').innerHTML = `<div class="grade-pagina">
+    <div class="grade-topo"><h2>Biblioteca<span class="qtd" id="grade-qtd"></span></h2><div class="ferramentas" id="ferr-grade" style="margin:0;flex-wrap:wrap"></div></div>
+    <div id="grade-itens"></div>
+  </div>`;
+  $('#ferr-grade').innerHTML = ferramentasHTML(true);
+  renderGradeItens();
+}
+
+// Durante o download, só mexe no card (sem redesenhar a grade inteira).
+function atualizarCard(id) {
+  const card = document.querySelector(`.card[data-card="${CSS.escape(id)}"]`);
+  const j = ui.jogos.find((x) => x.id === id);
+  if (!card || !j) return;
+  const [sub, cls] = situacao(j);
+  const p = ui.progresso[id];
+  if (!!p !== card.classList.contains('ocupado')) { card.outerHTML = cardHTML(j); return; }
+  card.className = `card ${cls}`;
+  card.querySelector('.card-sub').textContent = sub;
+  card.querySelector('.card-prog div').style.width = `${p ? (p.fase === 'instalando' ? 100 : pct(p)) : 0}%`;
+}
+
+const naGrade = () => ui.modo === 'grade' && !ui.gradeAberta;
+
+function aplicarModo() {
+  document.body.classList.toggle('modo-grade', ui.modo === 'grade');
+  $('#busca').value = ui.busca;
+  renderFerramentas();
 }
 
 function renderDetalhe() {
+  if (naGrade()) return renderGrade();
   const j = jogoSel();
   const el = $('#detalhe');
   if (!j) {
@@ -577,6 +834,7 @@ function renderDetalhe() {
   }
   el.innerHTML = `
     <section class="hero">
+      ${ui.modo === 'grade' ? `<button type="button" class="voltar" data-voltar>${icone('voltar')}Biblioteca</button>` : ''}
       ${arte(j, 'hero-arte')}
       <div class="hero-sombra"></div>
       <div class="hero-info">
@@ -641,9 +899,15 @@ function renderAcao(forcar) {
   }
 
   const extras = j.instalado && !p
-    ? `<div class="extras">
-        <button type="button" class="icone" data-acao="pasta" title="Abrir pasta do jogo">${icone('pasta')}</button>
-        <button type="button" class="icone perigo" data-acao="desinstalar" title="Desinstalar">${icone('lixo')}</button>
+    ? `<div class="extras ${ui.menuAberto ? 'aberto' : ''}">
+        <button type="button" class="icone menu-btn" data-menu title="Opções do jogo">${icone('engrenagem')}</button>
+        <div class="menu">
+          <button type="button" data-acao="atalho">${icone('atalho')}${j.instalado.atalho ? 'Recriar atalho na área de trabalho<span class="feito">✓ criado</span>' : 'Criar atalho na área de trabalho'}</button>
+          <button type="button" data-acao="verificar">${icone('escudo')}Verificar e reparar arquivos</button>
+          <button type="button" data-acao="pasta">${icone('pasta')}Abrir pasta do jogo</button>
+          <hr>
+          <button type="button" data-acao="desinstalar" class="perigo">${icone('lixo')}Desinstalar</button>
+        </div>
       </div>`
     : '';
 
@@ -720,32 +984,130 @@ async function atualizarLocal() {
 $('#btn-recarregar').innerHTML = icone('recarregar');
 $('#btn-recarregar').addEventListener('click', () => carregar(true));
 
-$('#busca').addEventListener('input', (e) => { ui.busca = e.target.value; renderLista(); });
+document.addEventListener('input', (e) => {
+  if (!e.target.matches('[data-busca]')) return;
+  ui.busca = e.target.value;
+  renderLista();
+  renderGradeItens();
+});
+
+function fecharMenus() {
+  if (!ui.orgAberto && !ui.menuAberto) return;
+  ui.orgAberto = false;
+  ui.menuAberto = false;
+  document.querySelectorAll('.org.aberto, .extras.aberto').forEach((x) => x.classList.remove('aberto'));
+}
+
+function voltarPraGrade() {
+  ui.gradeAberta = false;
+  fecharMenus();
+  renderDetalhe();
+}
+
+// Botões de organizar, modo lista/grade e fechar menus ao clicar fora.
+document.addEventListener('click', (e) => {
+  const alvo = e.target;
+  if (alvo.closest('[data-organizar]')) {
+    ui.orgAberto = !ui.orgAberto;
+    ui.menuAberto = false;
+    document.querySelectorAll('.org').forEach((x) => x.classList.toggle('aberto', ui.orgAberto && x.contains(alvo)));
+    return;
+  }
+  const opc = alvo.closest('[data-ordem], [data-filtro], [data-vista], [data-limpar]');
+  if (opc) {
+    if (opc.dataset.ordem) ui.ordem = opc.dataset.ordem;
+    if (opc.dataset.filtro) ui.filtro = opc.dataset.filtro;
+    if (opc.dataset.vista) { ui.modo = opc.dataset.vista; ui.gradeAberta = false; }
+    if (opc.hasAttribute('data-limpar')) { ui.filtro = 'todos'; ui.busca = ''; }
+    ui.orgAberto = false;
+    salvarPrefs();
+    aplicarModo();
+    renderLista();
+    renderDetalhe();
+    return;
+  }
+  if (alvo.closest('[data-menu]')) {
+    ui.menuAberto = !ui.menuAberto;
+    ui.orgAberto = false;
+    document.querySelectorAll('.extras').forEach((x) => x.classList.toggle('aberto', ui.menuAberto));
+    document.querySelectorAll('.org.aberto').forEach((x) => x.classList.remove('aberto'));
+    return;
+  }
+  if (!alvo.closest('.org-menu, .menu')) fecharMenus();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (ui.orgAberto || ui.menuAberto) fecharMenus();
+  else if (ui.modo === 'grade' && ui.gradeAberta && !document.body.classList.contains('ver-config')) voltarPraGrade();
+});
 
 $('#lista').addEventListener('click', (e) => {
   const item = e.target.closest('.item');
   if (!item || item.dataset.id === ui.selecionado) return;
   ui.selecionado = item.dataset.id;
+  ui.menuAberto = false;
   renderLista();
   renderDetalhe();
 });
 
+function atualizarJogoNaTela(id) {
+  renderLista();
+  if (naGrade()) atualizarCard(id);
+  else if (id === ui.selecionado) renderAcao(true);
+}
+
+async function baixarJogo(j, textoOk) {
+  ui.progresso[j.id] = { id: j.id, fase: 'baixando', baixado: 0, total: 0 };
+  atualizarJogoNaTela(j.id);
+  const r = await tlw.instalar(j.id);
+  if (r && r.ok) toast(textoOk || (r.atualizou ? `${j.nome} atualizado!` : `${j.nome} instalado! Bora jogar.`), 'ok');
+  else if (r && r.cancelado) toast('Download cancelado.');
+}
+
+async function verificarJogo(j) {
+  toast(`Verificando os arquivos de ${j.nome}…`);
+  const r = await tlw.chamar('verificar', { id: j.id });
+  let reparar;
+  if (r.ok && r.semLista) {
+    reparar = confirm(`${j.nome} foi instalado antes de o launcher guardar a lista de arquivos, então só deu pra conferir o arquivo principal, e ele está ok.\n\nQuer baixar o jogo de novo mesmo assim, pra garantir?`);
+  } else if (r.ok) {
+    toast(`Tudo certo! ${r.total} ${r.total === 1 ? 'arquivo verificado' : 'arquivos verificados'} em ${j.nome}.`, 'ok');
+    return;
+  } else {
+    reparar = confirm(`Encontrei ${r.problemas} ${r.problemas === 1 ? 'arquivo faltando ou danificado' : 'arquivos faltando ou danificados'} em ${j.nome}.\n\nBaixar o jogo de novo pra reparar?${j.tamanho ? ` (${j.tamanho})` : ''}\n\nObs.: se o jogo guarda o progresso dentro da pasta dele, esse progresso pode ser perdido.`);
+  }
+  if (reparar) await baixarJogo(j, `${j.nome} reparado!`);
+}
+
 $('#detalhe').addEventListener('click', async (e) => {
+  if (e.target.closest('[data-voltar]')) return voltarPraGrade();
   const b = e.target.closest('[data-acao]');
-  if (!b || b.disabled) return;
-  const j = jogoSel();
-  if (!j) return;
-  const id = j.id;
+  if (!b) {
+    const card = e.target.closest('[data-card]');
+    if (card) {
+      ui.selecionado = card.dataset.card;
+      ui.gradeAberta = true;
+      ui.menuAberto = false;
+      renderLista();
+      renderDetalhe();
+      $('#detalhe').scrollTop = 0;
+    }
+    return undefined;
+  }
+  if (b.disabled) return undefined;
+  const id = b.dataset.id || ui.selecionado;
+  const j = ui.jogos.find((x) => x.id === id);
+  if (!j) return undefined;
+  if (b.closest('.menu')) fecharMenus();
   try {
     switch (b.dataset.acao) {
-      case 'instalar': {
-        ui.progresso[id] = { id, fase: 'baixando', baixado: 0, total: 0 };
-        renderLista(); renderAcao(true);
-        const r = await tlw.instalar(id);
-        if (r && r.ok) toast(r.atualizou ? `${j.nome} atualizado!` : `${j.nome} instalado! Bora jogar.`, 'ok');
-        else if (r && r.cancelado) toast('Download cancelado.');
+      case 'instalar': await baixarJogo(j); break;
+      case 'atalho':
+        await tlw.chamar('atalho', { id });
+        toast(`Atalho de ${j.nome} criado na área de trabalho.`, 'ok');
         break;
-      }
+      case 'verificar': await verificarJogo(j); break;
       case 'cancelar': await tlw.cancelar(id); break;
       case 'jogar': await tlw.jogar(id); break;
       case 'desinstalar': {
@@ -758,22 +1120,30 @@ $('#detalhe').addEventListener('click', async (e) => {
     }
   } catch (err) {
     delete ui.progresso[id];
-    renderLista(); renderAcao(true);
+    atualizarJogoNaTela(id);
     toast(limparErro(err), 'erro');
   }
+  return undefined;
+});
+
+$('#detalhe').addEventListener('keydown', (e) => {
+  const card = e.target.closest('[data-card]');
+  if (card && e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); card.click(); }
 });
 
 tlw.aoProgresso((d) => {
   if (d.fase === 'fim') delete ui.progresso[d.id];
   else ui.progresso[d.id] = d;
   renderLista();
-  if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
+  if (naGrade()) atualizarCard(d.id);
+  else if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
 });
 
 tlw.aoMudar(() => { atualizarLocal(); });
 
 // ───────────── aba Configurações ─────────────
 
+const FUNCIONA_SEM_EXE = new Set(['discord']);
 const cfgUI = { dados: null, procurando: false, nova: null, movendo: false, msgVersao: '' };
 
 const OPCOES = [
@@ -784,6 +1154,9 @@ const OPCOES = [
   ['Segundo plano', [
     ['segundoPlano', 'Continuar rodando ao fechar a janela', 'O launcher fica no ícone perto do relógio e continua de olho nas atualizações.'],
     ['avisarAtualizacoes', 'Avisar quando um jogo tiver atualização', 'Mostra um aviso do Windows quando sair versão nova de um jogo que você tem.'],
+  ]],
+  ['Discord', [
+    ['discord', 'Mostrar no Discord o jogo que você está jogando', 'Aparece "Jogando..." no seu perfil enquanto o jogo estiver aberto. Precisa do Discord aberto no PC.'],
   ]],
   ['Jogos', [
     ['atualizarAuto', 'Atualizar os jogos automaticamente', 'Baixa as atualizações sozinho, sem você precisar clicar (menos de jogos que estiverem abertos).'],
@@ -803,7 +1176,7 @@ function renderConfig() {
   const semExe = !d.exe;
   const grupos = OPCOES.map(([titulo, itens]) => {
     const linhas = itens.map(([k, nome, desc, depende]) => {
-      const off = semExe || (depende && !c[depende]);
+      const off = (semExe && !FUNCIONA_SEM_EXE.has(k)) || (depende && !c[depende]);
       return `<div class="opcao ${off ? 'desligada' : ''}"><div class="opcao-txt"><div class="opcao-titulo">${nome}</div><div class="opcao-desc">${desc}</div></div>${chave(k, c[k], off)}</div>`;
     }).join('');
     const pasta = titulo !== 'Jogos' ? '' : `
@@ -837,6 +1210,8 @@ function renderConfig() {
 }
 
 async function abrirAba(aba) {
+  if (aba === 'biblioteca' && !document.body.classList.contains('ver-config') && ui.modo === 'grade' && ui.gradeAberta) voltarPraGrade();
+  fecharMenus();
   document.body.classList.toggle('ver-config', aba === 'config');
   document.querySelectorAll('.abas .aba').forEach((b) => b.classList.toggle('ativa', b.dataset.aba === aba));
   if (aba === 'config') {
@@ -898,6 +1273,7 @@ $('#config').addEventListener('click', async (e) => {
 tlw.aoEvento('pasta', (d) => { cfgUI.movendo = d.fase === 'movendo'; renderConfig(); });
 
 
+aplicarModo();
 carregar(false);
 
 </script>
