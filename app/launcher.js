@@ -42,7 +42,8 @@ const PASTA_DADOS = path.join(process.env.APPDATA || path.join(os.homedir(), '.c
 const ARQ_ESTADO = path.join(PASTA_DADOS, 'instalados.json');
 const ARQ_CACHE = path.join(PASTA_DADOS, 'jogos-cache.json');
 const ARQ_CONFIG = path.join(PASTA_DADOS, 'config.json');
-const PASTA_PADRAO = path.join(os.homedir(), 'Documents', 'TLW Games');
+const PASTA_DOCUMENTOS = path.join(os.homedir(), 'Documents', 'TLW Games');
+let PASTA_PADRAO = PASTA_DOCUMENTOS; // vira ...\TLW Games\Games quando o launcher está instalado (veja mais abaixo)
 
 // Configurações que a pessoa muda na aba Configurações.
 const CONFIG_PADRAO = {
@@ -62,6 +63,29 @@ const pastaTemp = () => path.join(pastaJogos(), '.baixando');
 // Recursos que só existem na versão .exe (bandeja, iniciar com o Windows, avisos...).
 // Rodando com "node launcher.js", fica null e essas opções aparecem desativadas.
 const casca = global.tlwShell || null;
+
+// Instalado pelo instalador (em Arquivos de Programas\TLW Games\Launcher)?
+const PASTA_INSTALACAO = path.dirname(process.execPath);
+const INSTALADO = !!(casca && !process.env.PORTABLE_EXECUTABLE_FILE
+  && (process.env.TLW_TESTE_INSTALADO || (process.platform === 'win32'
+    && fs.existsSync(path.join(PASTA_INSTALACAO, 'Uninstall TLW Games Launcher.exe')))));
+
+function podeGravar(pasta) {
+  try {
+    fs.mkdirSync(pasta, { recursive: true });
+    const teste = path.join(pasta, `.tlw-teste-${process.pid}`);
+    fs.writeFileSync(teste, 'ok');
+    fs.rmSync(teste, { force: true });
+    return true;
+  } catch { return false; }
+}
+
+// Instalado: os jogos ficam em ...\TLW Games\Games (o instalador libera essa pasta).
+// Se por algum motivo não der pra gravar lá, usa Documentos\TLW Games.
+if (INSTALADO) {
+  const games = process.env.TLW_TESTE_INSTALADO || path.join(path.dirname(PASTA_INSTALACAO), 'Games');
+  if (podeGravar(games)) PASTA_PADRAO = games;
+}
 
 const TOKEN = crypto.randomBytes(16).toString('hex');
 
@@ -230,7 +254,12 @@ async function baixarUm(url, destino, signal, aoProgredir) {
   const r = await fetch(url, { signal, redirect: 'follow' });
   if (!r.ok) throw new Error(`O servidor respondeu com erro ${r.status}.`);
   const total = Number(r.headers.get('content-length')) || 0;
+  // Abre o arquivo antes: se a pasta não deixar gravar, dá um erro que dá pra tratar
+  // (antes, esse erro derrubava o launcher inteiro).
+  await fsp.writeFile(destino, '');
   const saida = fs.createWriteStream(destino);
+  let erroGravar = null;
+  saida.on('error', (e) => { erroGravar = e; });
   const leitor = r.body.getReader();
   let baixado = 0;
   let ultimoEnvio = 0;
@@ -240,8 +269,15 @@ async function baixarUm(url, destino, signal, aoProgredir) {
     for (;;) {
       const { done, value } = await leitor.read();
       if (done) break;
+      if (erroGravar) throw erroGravar;
       baixado += value.length;
-      if (!saida.write(value)) await new Promise((res) => saida.once('drain', res));
+      if (!saida.write(value)) {
+        await new Promise((res) => {
+          const pronto = () => { saida.off('drain', pronto); saida.off('error', pronto); res(); };
+          saida.on('drain', pronto);
+          saida.on('error', pronto);
+        });
+      }
       const agora = Date.now();
       if (agora - ultimoEnvio >= 250) {
         if (ultimoEnvio) vel = ((baixado - ultimoBaixado) / (agora - ultimoEnvio)) * 1000;
@@ -251,8 +287,9 @@ async function baixarUm(url, destino, signal, aoProgredir) {
       }
     }
   } finally {
-    await new Promise((res) => saida.end(res));
+    await new Promise((res) => { if (saida.destroyed || erroGravar) res(); else saida.end(res); });
   }
+  if (erroGravar) throw erroGravar;
   if (total && baixado !== total) throw new Error('O download veio incompleto.');
   aoProgredir(baixado, total || baixado, vel);
 }
@@ -336,6 +373,10 @@ async function instalar(id) {
   } catch (e) {
     await fsp.rm(nova, { recursive: true, force: true }).catch(() => {});
     if (controle.signal.aborted) return { ok: false, cancelado: true };
+    if (e && ['EPERM', 'EACCES', 'ENOTDIR', 'EROFS', 'EBUSY'].includes(e.code)) {
+      throw new Error(`Não tenho permissão pra salvar na pasta dos jogos (${pastaJogos()}). Mude a pasta em Configurações.`);
+    }
+    if (e && e.code === 'ENOSPC') throw new Error('Não tem espaço suficiente no disco pra instalar esse jogo.');
     throw e;
   } finally {
     if (tmp) await fsp.rm(tmp, { force: true }).catch(() => {});
@@ -929,18 +970,48 @@ setInterval(() => {
 ultimoCliente = Date.now() + 20000; // dá um tempo pra janela abrir na primeira vez
 
 // ═════════════════════════════════════════════════════════════
-//  ATUALIZAÇÃO DO PRÓPRIO .EXE
-//  Quando você publica um .exe novo pelo Admin (aba Launcher), ele fica
-//  no campo "exe" do app/versao.json. Ao abrir, o launcher compara com o
-//  .exe que está rodando; se for diferente, baixa (com a janelinha de
-//  progresso), troca o arquivo e reabre sozinho.
-//  Só funciona no .exe portátil (o do MONTAR-EXE.bat).
+//  ATUALIZAÇÃO DO PRÓPRIO LAUNCHER (pelo instalador)
+//  Quando você publica um instalador novo pelo Admin (aba Launcher), ele fica
+//  no campo "instalador" do app/versao.json, com o número da versão.
+//  Ao abrir, o launcher compara com a versão dele. Se for mais nova:
+//   • instalado: baixa o instalador (com a janelinha) e roda ele sozinho,
+//     sem perguntas (só o aviso de permissão do Windows), e reabre;
+//   • .exe portátil antigo: baixa e abre o instalador normal, pra pessoa
+//     passar a usar a versão instalada.
 // ═════════════════════════════════════════════════════════════
 
-const ARQ_HASH_EXE = path.join(PASTA_DADOS, 'exe-hash.json');
 const exeAtual = () => process.env.PORTABLE_EXECUTABLE_FILE || '';
-const podeAtualizarExe = () => !!(casca && exeAtual() && (process.platform === 'win32' || process.env.TLW_TESTE_EXE));
-const exeAntigo = (exe) => `${exe.replace(/\.exe$/i, '')}.antigo.exe`;
+const podeAtualizarLauncher = () => !!(casca && (INSTALADO || exeAtual())
+  && (process.platform === 'win32' || process.env.TLW_TESTE_EXE)
+  && !process.argv.includes('--pular-atualizacao'));
+
+// Versão do .exe que está rodando (o MONTAR-EXE.bat grava a data/hora da montagem).
+function versaoDoExe() {
+  for (const p of [process.env.TLW_PASTA_EMBUTIDA, __dirname].filter(Boolean)) {
+    const v = Number((lerJSON(path.join(p, 'package.json'), {}).tlw || {}).versaoApp);
+    if (v) return v;
+  }
+  return 0;
+}
+
+// Restos das tentativas antigas de trocar o .exe portátil.
+function limparRestos() {
+  const exe = exeAtual();
+  if (!exe) return;
+  for (const f of [`${exe}.novo`, `${exe.replace(/\.exe$/i, '')}.antigo.exe`]) {
+    try { if (fs.existsSync(f)) fs.rmSync(f, { force: true }); } catch { /* sem permissão: deixa */ }
+  }
+}
+
+async function infoInstaladorPublicado() {
+  const r = await fetch(`${GH_API}/repos/${REPO}/contents/app/versao.json`, {
+    headers: { Accept: 'application/vnd.github.raw', 'User-Agent': 'TLW-Games-Launcher' },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) return null;
+  const inst = (await r.json()).instalador;
+  return inst && /^https?:\/\//.test(inst.url || '') && /^[a-f0-9]{64}$/.test(inst.sha256 || '') && Number(inst.versao) ? inst : null;
+}
 
 function hashArquivo(arquivo) {
   return new Promise((res, rej) => {
@@ -949,67 +1020,31 @@ function hashArquivo(arquivo) {
   });
 }
 
-// O hash do .exe fica guardado (só recalcula se o arquivo mudar), pra não atrasar a abertura.
-async function hashDoExe(exe) {
-  const st = fs.statSync(exe);
-  const cache = lerJSON(ARQ_HASH_EXE, {});
-  if (cache.caminho === exe && cache.tamanho === st.size && cache.mtime === st.mtimeMs && cache.sha256) return cache.sha256;
-  const sha256 = await hashArquivo(exe);
-  salvarJSON(ARQ_HASH_EXE, { caminho: exe, tamanho: st.size, mtime: st.mtimeMs, sha256 });
-  return sha256;
-}
-
-function limparExeAntigo() {
-  const antigo = exeAntigo(exeAtual());
-  const tentar = (n) => {
-    try { if (fs.existsSync(antigo)) fs.rmSync(antigo, { force: true }); } catch {
-      if (n > 0) setTimeout(() => tentar(n - 1), 5000); // o .exe antigo ainda pode estar fechando
-    }
-  };
-  tentar(6);
-}
-
-async function infoExePublicado() {
-  const r = await fetch(`${GH_API}/repos/${REPO}/contents/app/versao.json`, {
-    headers: { Accept: 'application/vnd.github.raw', 'User-Agent': 'TLW-Games-Launcher' },
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!r.ok) return null;
-  const exe = (await r.json()).exe;
-  return exe && /^https?:\/\//.test(exe.url || '') && /^[a-f0-9]{64}$/.test(exe.sha256 || '') ? exe : null;
-}
-
-// Script ajudante: espera o launcher fechar de vez (no Windows o .exe portátil fica
-// "preso" enquanto está aberto), troca o .exe pelo novo e reabre o launcher.
-const TROCAR_BAT = [
-  '@echo off',
-  'setlocal',
-  'set "ALVO=%~1"',
-  'set "NOVO=%~2"',
-  'set "EXTRA=%~3"',
-  'set /a TENTA=0',
-  ':espera',
-  'ping -n 2 127.0.0.1 >nul',
-  'move /y "%NOVO%" "%ALVO%" >nul 2>&1',
-  'if not errorlevel 1 goto pronto',
-  'set /a TENTA+=1',
-  'if %TENTA% lss 60 goto espera',
-  'rem Nao conseguiu trocar em 1 minuto: abre o launcher que ja estava la.',
-  ':pronto',
-  'if exist "%ALVO%" start "" "%ALVO%" %EXTRA%',
-  '(goto) 2>nul & del "%~f0"',
-].join('\r\n');
-
-function trocarEReabrir(exe, novo) {
-  const extra = process.argv.includes('--oculto') ? '--oculto' : '';
+// Roda o instalador depois que o launcher fechar. Se a pessoa recusar o aviso de
+// permissão do Windows, reabre o launcher atual (sem tentar atualizar de novo agora).
+function rodarInstaladorEFechar(setup) {
+  const atual = exeAtual() || process.execPath;
+  const oculto = process.argv.includes('--oculto');
+  const argsSetup = INSTALADO ? "'/S','--updated','--force-run'" : "''";
+  const argsVolta = `'--pular-atualizacao'${oculto ? ",'--oculto'" : ''}`;
   if (process.platform === 'win32') {
-    const bat = path.join(os.tmpdir(), `tlw-trocar-launcher-${Date.now()}.bat`);
-    fs.writeFileSync(bat, TROCAR_BAT);
-    spawn('cmd.exe', ['/d', '/s', '/c', `""${bat}" "${exe}" "${novo}" "${extra}""`],
-      { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }).unref();
+    const ps = [
+      'Start-Sleep -Seconds 2',
+      'try {',
+      `  Start-Process -FilePath $env:TLW_SETUP ${INSTALADO ? `-ArgumentList ${argsSetup} ` : ''}-Verb RunAs -Wait -ErrorAction Stop`,
+      '} catch {',
+      `  Start-Process -FilePath $env:TLW_ATUAL -ArgumentList ${argsVolta}`,
+      '}',
+      'Remove-Item -LiteralPath $env:TLW_SETUP -Force -ErrorAction SilentlyContinue',
+    ].join('\n');
+    spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-Command', ps], {
+      detached: true, stdio: 'ignore', windowsHide: true,
+      env: { ...process.env, TLW_SETUP: setup, TLW_ATUAL: atual },
+    }).unref();
   } else {
-    const sh = 'for i in $(seq 1 30); do sleep 1; mv -f "$2" "$1" 2>/dev/null && break; done; chmod +x "$1"; "$1" $3 &';
-    spawn('sh', ['-c', sh, 'sh', exe, novo, extra], { detached: true, stdio: 'ignore' }).unref();
+    // (só pra testar fora do Windows)
+    spawn('sh', ['-c', 'sleep 1; chmod +x "$0"; "$0" "$@" &', setup, ...(INSTALADO ? ['/S', '--updated', '--force-run'] : [])],
+      { detached: true, stdio: 'ignore' }).unref();
   }
   try { servidor.close(); } catch { /* ok */ }
   setTimeout(() => {
@@ -1017,35 +1052,34 @@ function trocarEReabrir(exe, novo) {
   }, 300);
 }
 
-// Devolve true se achou .exe novo (o launcher vai reabrir sozinho).
+// Devolve true se achou versão nova (o launcher vai fechar e o instalador assume).
 // mostrar(texto, fração de 0 a 1 ou null) atualiza a janelinha.
-async function atualizarExe(mostrar) {
-  if (!podeAtualizarExe()) return false;
-  const exe = exeAtual();
-  limparExeAntigo();
+async function atualizarLauncher(mostrar) {
+  if (!podeAtualizarLauncher()) return false;
+  limparRestos();
   let info;
-  try { info = await infoExePublicado(); } catch { return false; }
-  if (!info) return false;
-  try { if ((await hashDoExe(exe)) === info.sha256) return false; } catch { return false; }
+  try { info = await infoInstaladorPublicado(); } catch { return false; }
+  if (!info || Number(info.versao) <= versaoDoExe()) return false;
 
   const avisar = mostrar || (() => {});
-  const novo = `${exe}.novo`;
+  const setup = path.join(os.tmpdir(), `TLW-Games-Launcher-Setup-${info.versao}.exe`);
   try {
-    avisar('Baixando launcher novo…', 0);
-    await baixarUm(info.url, novo, new AbortController().signal, (baixado, total, vel) => {
-      const mb = (n) => (n / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-      avisar(`Baixando launcher novo… ${mb(baixado)} de ${mb(total || info.tamanho || baixado)} MB`, total ? baixado / total : null);
-    });
-    if ((await hashArquivo(novo)) !== info.sha256) throw new Error('arquivo diferente do publicado');
-    // Já deixa anotado o hash do .exe novo (a troca não muda o tamanho nem a data do arquivo).
-    const st = fs.statSync(novo);
-    salvarJSON(ARQ_HASH_EXE, { caminho: exe, tamanho: st.size, mtime: st.mtimeMs, sha256: info.sha256 });
+    const pronto = fs.existsSync(setup) && (await hashArquivo(setup)) === info.sha256;
+    if (!pronto) {
+      avisar('Baixando o launcher novo…', 0);
+      await baixarUm(info.url, setup, new AbortController().signal, (baixado, total) => {
+        const mb = (n) => (n / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        avisar(`Baixando o launcher novo… ${mb(baixado)} de ${mb(total || info.tamanho || baixado)} MB`, total ? baixado / total : null);
+      });
+      if ((await hashArquivo(setup)) !== info.sha256) throw new Error('arquivo diferente do publicado');
+    }
   } catch {
-    try { fs.rmSync(novo, { force: true }); } catch { /* ok */ }
-    return false; // sem internet, sem permissão na pasta etc.: segue com o .exe atual
+    try { fs.rmSync(setup, { force: true }); } catch { /* ok */ }
+    return false; // sem internet etc.: segue com o launcher atual
   }
-  avisar('Reabrindo o launcher atualizado…', 1);
-  trocarEReabrir(exe, novo);
+  avisar(INSTALADO ? 'Instalando… (aceite o aviso do Windows)' : 'Abrindo o instalador…', 1);
+  await new Promise((r) => setTimeout(r, 900));
+  rodarInstaladorEFechar(setup);
   return true;
 }
 
@@ -1096,14 +1130,14 @@ function janelinhaPropria() {
 
 if (casca && casca.temGanchos) {
   // .exe novo: a casca chama isto antes de abrir a tela, usando a janelinha dela.
-  global.tlwAntesDeAbrir = (mostrar) => atualizarExe(mostrar);
-} else if (podeAtualizarExe()) {
+  global.tlwAntesDeAbrir = (mostrar) => atualizarLauncher(mostrar);
+} else if (podeAtualizarLauncher()) {
   // .exe antigo: confere sozinho e, se tiver .exe novo, esconde a tela e mostra a nossa janelinha.
   (async () => {
     let janelinha = null;
     let escondidas = [];
     const oculto = process.argv.includes('--oculto');
-    const atualizou = await atualizarExe((texto, fracao) => {
+    const atualizou = await atualizarLauncher((texto, fracao) => {
       if (!janelinha && !oculto) {
         try {
           escondidas = require('electron').BrowserWindow.getAllWindows().filter((w) => w.isVisible());
@@ -1120,3 +1154,12 @@ if (casca && casca.temGanchos) {
     }
   })().catch(() => {});
 }
+
+// Quem já tinha jogos em Documentos\TLW Games (antes do instalador) continua com eles lá.
+// Dá pra mudar pra pasta nova em Configurações → "Voltar pro padrão".
+(() => {
+  const cfg = lerConfig();
+  if (cfg.pastaJogos || PASTA_PADRAO === PASTA_DOCUMENTOS) return;
+  const temJogoLa = Object.keys(lerEstado()).some((id) => fs.existsSync(path.join(PASTA_DOCUMENTOS, nomePasta(id))));
+  if (temJogoLa) salvarJSON(ARQ_CONFIG, { ...cfg, pastaJogos: PASTA_DOCUMENTOS });
+})();
