@@ -693,11 +693,24 @@ function iniciais(nome) {
     .map((p) => p[0]).join('').slice(0, 4).toUpperCase();
 }
 
+// Tamanho (em px de tela) de cada lugar onde a capa aparece: a imagem chega já reduzida
+// com qualidade pelo launcher, sem serrilhado. O hero é grande, então usa a original.
+const TAMANHO_ARTE = { mini: [44, 44], 'card-arte': [440, 248] };
+
+function srcImagem(u, w, h, modo) {
+  const d = Math.min(3, window.devicePixelRatio || 1);
+  return tlw.mini ? tlw.mini(u, w * d, h * d, modo) : u;
+}
+
+// Se a miniatura falhar, tenta a imagem original; se ela também falhar, some.
+const ERRO_IMG = "if(this.dataset.orig&&this.getAttribute('src')!==this.dataset.orig){this.src=this.dataset.orig}else{this.remove()}";
+
 function arte(j, classe) {
   // A arte com as iniciais fica embaixo; a capa aparece por cima quando carrega.
   // Se o link da capa não funcionar, a imagem some e as iniciais continuam lá.
+  const tam = TAMANHO_ARTE[classe];
   const capa = j.capa
-    ? `<img class="arte-img" src="${esc(j.capa)}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">`
+    ? `<img class="arte-img" src="${esc(tam ? srcImagem(j.capa, tam[0], tam[1], 'cover') : j.capa)}" data-orig="${esc(j.capa)}" alt="" referrerpolicy="no-referrer" onerror="${ERRO_IMG}">`
     : '';
   return `<div class="arte gerada ${classe}" style="--h:${matiz(j.id)}"><span class="ini">${esc(iniciais(j.nome))}</span>${capa}</div>`;
 }
@@ -933,7 +946,7 @@ function secaoGaleria(j) {
   const fotos = fotosDe(j);
   if (!fotos.length) return '';
   return `<section class="secao"><h3>Galeria <span class="qtd">${fotos.length} ${fotos.length === 1 ? 'imagem' : 'imagens'}</span></h3>
-    <div class="galeria">${fotos.map((u, i) => `<button type="button" class="foto" data-foto="${i}" title="Ampliar"><img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer"></button>`).join('')}</div></section>`;
+    <div class="galeria">${fotos.map((u, i) => `<button type="button" class="foto" data-foto="${i}" title="Ampliar"><img src="${esc(srcImagem(u, 400, 225, 'cover'))}" data-orig="${esc(u)}" onerror="${ERRO_IMG}" alt="" loading="lazy" referrerpolicy="no-referrer"></button>`).join('')}</div></section>`;
 }
 
 const visor = { fotos: [], i: 0 };
@@ -1110,7 +1123,7 @@ function aplicarVisual(v) {
   const nome = String(v.nome || 'TLW Games').trim();
   const marca = document.querySelector('.marca');
   if (v.logo) {
-    marca.innerHTML = `<img class="marca-logo" referrerpolicy="no-referrer" src="${esc(v.logo)}" alt="${esc(nome)}">`;
+    marca.innerHTML = `<img class="marca-logo" referrerpolicy="no-referrer" src="${esc(srcImagem(v.logo, 200, 34, 'contain'))}" data-orig="${esc(v.logo)}" onerror="${ERRO_IMG}" alt="${esc(nome)}">`;
   } else {
     const [primeira, ...resto] = nome.split(/\s+/);
     marca.innerHTML = `<span class="marca-tlw">${esc(primeira)}</span>${resto.length ? `<span class="marca-games">${esc(resto.join(' ').toUpperCase())}</span>` : ''}`;
