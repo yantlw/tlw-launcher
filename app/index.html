@@ -457,6 +457,58 @@ body.modo-grade .lateral { display: none; }
 .menu .feito { margin-left: auto; font-size: 11px; color: var(--verde); font-weight: 700; }
 .extras.aberto .menu-btn { background: rgba(255, 255, 255, .18); }
 
+
+/* ───────── download: fila / pausado ───────── */
+.item.pausado .item-sub, .card.pausado .card-sub { color: var(--acento2); }
+.card.pausado .card-prog { display: block; }
+.card.pausado .card-prog div { background: #8a7a40; }
+.enchimento.pausado { background: linear-gradient(90deg, #6d6340, #8a7a40); }
+.progresso-txt .rotulo { font-weight: 700; }
+
+/* ───────── em breve ───────── */
+.btn-avisar { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .1)), var(--acento); color: #fff; }
+.btn-avisando { background: var(--painel2); border: 1px solid color-mix(in srgb, var(--acento) 60%, transparent); color: #fff; }
+.contagem { font-variant-numeric: tabular-nums; }
+
+/* ───────── seções da página do jogo ───────── */
+.secoes { display: flex; flex-direction: column; gap: 18px; padding: 0 24px 40px; }
+.secao { padding: 18px 20px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
+.secao h3 { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
+.secao h3 .qtd { letter-spacing: .02em; text-transform: none; font-weight: 600; color: var(--txt2); }
+.secao .mais { margin-top: 12px; color: var(--acento); font-weight: 700; font-size: 13px; }
+.info { padding-bottom: 18px; }
+
+.galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.foto { position: relative; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: var(--painel2); }
+.foto img { width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.foto:hover img { transform: scale(1.04); }
+.foto:focus-visible { outline: 2px solid var(--acento); }
+
+.visor { position: fixed; inset: 0; z-index: 50; display: none; align-items: center; justify-content: center; background: rgba(5, 6, 9, .93); }
+.visor.aberto { display: flex; }
+.visor img { max-width: calc(100vw - 160px); max-height: calc(100vh - 110px); border-radius: 8px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+.visor-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .08); color: #fff; }
+.visor-nav:hover { background: rgba(255, 255, 255, .18); }
+.visor-nav svg { width: 26px; height: 26px; }
+.visor-nav.ant { left: 24px; }
+.visor-nav.prox { right: 24px; }
+.visor-nav.prox svg { transform: scaleX(-1); }
+.visor-fechar { position: absolute; top: 18px; right: 22px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(255, 255, 255, .08); }
+.visor-fechar:hover { background: rgba(255, 255, 255, .18); }
+.visor-cont { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; color: var(--txt2); font-size: 13px; }
+
+.historico { display: flex; flex-direction: column; }
+.versao { padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, .05); }
+.versao:first-child { border-top: 0; padding-top: 0; }
+.versao-topo { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.versao-topo b { font-size: 15px; }
+.versao-topo .data { color: var(--txt3); font-size: 12.5px; }
+.tag { padding: 1px 8px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: color-mix(in srgb, var(--acento) 18%, transparent); color: color-mix(in srgb, var(--acento) 65%, white); }
+.tag.verde { background: rgba(51, 209, 122, .14); color: #7fe3ab; }
+.versao p { margin-top: 6px; color: #c6cad6; white-space: pre-line; user-select: text; }
+.versao p:empty { display: none; }
+
+
 @media (max-width: 1100px) {
   .info { grid-template-columns: 1fr; }
   .stats { column-gap: 22px; }
@@ -582,6 +634,21 @@ function fmtTempo(ms) {
   return `${(min / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} horas`;
 }
 
+const fmtNum = (n) => Number(n || 0).toLocaleString('pt-BR');
+const fmtDataCurta = (t) => new Date(t).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+const fmtDataHora = (t) => new Date(t).toLocaleString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+function textoContagem(alvo) {
+  const falta = alvo - Date.now();
+  if (falta <= 0) return 'Chega a qualquer momento';
+  const s = Math.floor(falta / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d ? `${d}d ` : ''}${pad(h)}h ${pad(m)}min ${pad(s % 60)}s`;
+}
+
 function fmtData(t) {
   if (!t) return 'Nunca';
   const d = new Date(t);
@@ -616,6 +683,9 @@ const ICONES = {
   ordenar: '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   setaBaixo: '<svg class="seta-baixo" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   voltar: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pausa: '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+  fechar: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+  sino: '<svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 1 1 12 0c0 4.5 2 6 2 6H4s2-1.5 2-6zm4.3 9.5a2 2 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   recarregar: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v4.5h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 const icone = (n) => ICONES[n] || '';
@@ -664,9 +734,15 @@ function renderStatus() {
 
 function situacao(j) {
   const p = ui.progresso[j.id];
-  if (p) return [p.fase === 'instalando' ? 'Instalando…' : `Baixando ${pct(p)}%`, 'ocupado'];
+  if (p) {
+    if (p.fase === 'instalando') return ['Instalando…', 'ocupado'];
+    if (p.fase === 'fila') return [`Na fila${p.posicao ? ` (${p.posicao}º)` : ''}`, 'ocupado'];
+    if (p.fase === 'pausado') return [`Pausado${p.total ? ` · ${pct(p)}%` : ''}`, 'pausado'];
+    if (p.fase === 'reconectando') return ['Reconectando…', 'ocupado'];
+    return [`Baixando ${pct(p)}%`, 'ocupado'];
+  }
   if (j.rodando) return ['Jogando agora', 'rodando'];
-  if (j.emBreve) return ['Em breve', 'embreve'];
+  if (j.emBreve) return [j.lancamento ? `Chega ${fmtDataCurta(j.lancamento)}` : 'Em breve', 'embreve'];
   if (j.atualizacao) return ['Atualização disponível', 'atualizar'];
   if (j.instalado) return ['Instalado', 'instalado'];
   return ['Não instalado', ''];
@@ -756,7 +832,9 @@ function renderLista() {
 // ───────────── modo grade ─────────────
 
 function botaoRapido(j) {
-  if (ui.progresso[j.id] || j.rodando || j.emBreve) return '';
+  const p = ui.progresso[j.id];
+  if (p && p.fase === 'pausado') return `<button type="button" class="card-rapido instalar" data-acao="instalar" data-id="${esc(j.id)}" title="Continuar download">${icone('baixar')}</button>`;
+  if (p || j.rodando || j.emBreve) return '';
   if (j.atualizacao) return `<button type="button" class="card-rapido atualizar" data-acao="instalar" data-id="${esc(j.id)}" title="Atualizar">${icone('baixar')}</button>`;
   if (j.instalado) return `<button type="button" class="card-rapido jogar" data-acao="jogar" data-id="${esc(j.id)}" title="Jogar">${icone('play')}</button>`;
   return `<button type="button" class="card-rapido instalar" data-acao="instalar" data-id="${esc(j.id)}" title="Instalar">${icone('baixar')}</button>`;
@@ -772,7 +850,7 @@ function seloCard(j) {
 function cardHTML(j) {
   const [sub, cls] = situacao(j);
   const p = ui.progresso[j.id];
-  return `<div class="card ${cls}" data-card="${esc(j.id)}" tabindex="0" title="${esc(j.nome)}">
+  return `<div class="card ${cls}" data-card="${esc(j.id)}" data-estado="${p ? p.fase : ''}" tabindex="0" title="${esc(j.nome)}">
     <div class="card-capa">${arte(j, 'card-arte')}${seloCard(j)}${botaoRapido(j)}
       <div class="card-prog"><div style="width:${p ? (p.fase === 'instalando' ? 100 : pct(p)) : 0}%"></div></div></div>
     <div class="card-nome">${esc(j.nome)}</div>
@@ -809,7 +887,7 @@ function atualizarCard(id) {
   if (!card || !j) return;
   const [sub, cls] = situacao(j);
   const p = ui.progresso[id];
-  if (!!p !== card.classList.contains('ocupado')) { card.outerHTML = cardHTML(j); return; }
+  if ((p ? p.fase : '') !== card.dataset.estado) { card.outerHTML = cardHTML(j); return; }
   card.className = `card ${cls}`;
   card.querySelector('.card-sub').textContent = sub;
   card.querySelector('.card-prog div').style.width = `${p ? (p.fase === 'instalando' ? 100 : pct(p)) : 0}%`;
@@ -849,9 +927,106 @@ function renderDetalhe() {
       <div class="bloco"><h3>Sobre o jogo</h3>
         <p class="ficha">${esc([j.genero, j.desenvolvedor || 'TLW Games'].filter(Boolean).join(' · '))}</p>
         <p>${esc(String(j.descricao || 'Sem descrição.').trim())}</p></div>
-      <div class="bloco"><h3>Novidades da versão ${esc(j.versao || '')}</h3><p class="notas">${esc(String(j.notas || 'Sem notas para esta versão.').trim())}</p></div>
-    </section>`;
+      <div class="bloco"><h3>${j.emBreve ? 'Sobre o lançamento' : `Novidades da versão ${esc(j.versao || '')}`}</h3><p class="notas">${esc(String(j.notas || (j.emBreve ? 'Fique de olho: ative o "Me avise" pra saber quando sair.' : 'Sem notas para esta versão.')).trim())}</p></div>
+    </section>
+    <div class="secoes">
+      ${secaoGaleria(j)}
+      <section class="secao" id="historico"></section>
+    </div>`;
   renderAcao(true);
+  renderHistorico(j);
+  carregarExtras(j.id);
+}
+
+// ───────────── galeria ─────────────
+
+function fotosDe(j) { return [].concat(j.galeria || []).filter((u) => typeof u === 'string' && u); }
+
+function secaoGaleria(j) {
+  const fotos = fotosDe(j);
+  if (!fotos.length) return '';
+  return `<section class="secao"><h3>Galeria <span class="qtd">${fotos.length} ${fotos.length === 1 ? 'imagem' : 'imagens'}</span></h3>
+    <div class="galeria">${fotos.map((u, i) => `<button type="button" class="foto" data-foto="${i}" title="Ampliar"><img src="${esc(u)}" alt="" loading="lazy" referrerpolicy="no-referrer"></button>`).join('')}</div></section>`;
+}
+
+const visor = { fotos: [], i: 0 };
+
+function abrirVisor(fotos, i) {
+  visor.fotos = fotos;
+  visor.i = i;
+  let el = $('#visor');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'visor';
+    el.className = 'visor';
+    el.innerHTML = `<img alt="" referrerpolicy="no-referrer">
+      <button type="button" class="visor-nav ant" data-visor="-1" title="Anterior">${icone('voltar')}</button>
+      <button type="button" class="visor-nav prox" data-visor="1" title="Próxima">${icone('voltar')}</button>
+      <button type="button" class="visor-fechar" data-visor="fechar" title="Fechar (Esc)">${icone('fechar')}</button>
+      <div class="visor-cont"></div>`;
+    el.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-visor]');
+      if (b) { if (b.dataset.visor === 'fechar') fecharVisor(); else moverVisor(Number(b.dataset.visor)); return; }
+      if (e.target === el) fecharVisor();
+    });
+    document.body.appendChild(el);
+  }
+  mostrarVisor();
+  el.classList.add('aberto');
+}
+
+function mostrarVisor() {
+  const el = $('#visor');
+  el.querySelector('img').src = visor.fotos[visor.i];
+  el.querySelector('.visor-cont').textContent = `${visor.i + 1} de ${visor.fotos.length}`;
+  el.querySelectorAll('.visor-nav').forEach((b) => { b.style.display = visor.fotos.length > 1 ? '' : 'none'; });
+}
+
+function moverVisor(d) {
+  visor.i = (visor.i + d + visor.fotos.length) % visor.fotos.length;
+  mostrarVisor();
+}
+
+function fecharVisor() { const el = $('#visor'); if (el) el.classList.remove('aberto'); }
+const visorAberto = () => { const el = $('#visor'); return !!(el && el.classList.contains('aberto')); };
+
+// ───────────── histórico de atualizações e contador (GitHub) ─────────────
+
+ui.extras = {};
+ui.historicoTodos = {};
+
+async function carregarExtras(id) {
+  if (ui.extras[id]) return;
+  ui.extras[id] = { carregando: true };
+  try { ui.extras[id] = await tlw.chamar('extras', { id }); } catch { ui.extras[id] = {}; }
+  const j = jogoSel();
+  if (j && j.id === id && !naGrade()) { renderAcao(true); renderHistorico(j); }
+}
+
+function limparNotas(t) {
+  return String(t || '').replace(/\r/g, '').replace(/^#+\s*/gm, '').replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^\s*[-*]\s+/gm, '• ').trim();
+}
+
+function renderHistorico(j) {
+  const el = $('#historico');
+  if (!el) return;
+  const ex = ui.extras[j.id] || {};
+  let lista = ex.historico && ex.historico.length ? ex.historico : [];
+  if (!lista.length && j.versao && !j.emBreve) lista = [{ versao: j.versao, notas: j.notas || '', data: null }];
+  if (!lista.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const todos = ui.historicoTodos[j.id];
+  const mostrar = todos ? lista : lista.slice(0, 3);
+  const instalada = j.instalado && j.instalado.versao;
+  el.innerHTML = `<h3>Histórico de atualizações <span class="qtd">${lista.length} ${lista.length === 1 ? 'versão' : 'versões'}</span></h3>
+    <div class="historico">${mostrar.map((v) => `<div class="versao">
+      <div class="versao-topo"><b>Versão ${esc(v.versao)}</b>
+        ${v.data ? `<span class="data">${esc(new Date(v.data).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' }))}</span>` : ''}
+        ${String(v.versao) === String(j.versao) ? '<span class="tag">mais nova</span>' : ''}
+        ${instalada && String(v.versao) === String(instalada) ? '<span class="tag verde">instalada</span>' : ''}</div>
+      <p>${esc(limparNotas(v.notas))}</p></div>`).join('')}</div>
+    ${lista.length > 3 ? `<button type="button" class="mais" data-historico>${todos ? 'Mostrar menos' : `Ver todas as ${lista.length} versões`}</button>` : ''}`;
 }
 
 function renderAcao(forcar) {
@@ -860,8 +1035,8 @@ function renderAcao(forcar) {
   if (!j || !el) return;
   const p = ui.progresso[j.id];
 
-  // Durante o download só atualiza a barra, sem recriar os botões (assim o "Cancelar" não pisca).
-  if (p && !forcar && el.dataset.modo === 'prog') {
+  // Durante o download só atualiza a barra, sem recriar os botões (assim eles não piscam).
+  if (p && !forcar && el.dataset.modo === 'prog' && el.dataset.fase === p.fase) {
     const porc = pct(p);
     el.querySelector('.progresso-num').textContent = textoProgresso(p);
     const ench = el.querySelector('.enchimento');
@@ -871,9 +1046,16 @@ function renderAcao(forcar) {
   }
 
   let botao;
-  if (p) botao = '<button type="button" class="btn btn-sec" data-acao="cancelar">Cancelar</button>';
-  else if (j.rodando) botao = '<button type="button" class="btn btn-jogando" disabled>Jogando…</button>';
-  else if (j.emBreve) botao = '<button type="button" class="btn btn-sec" disabled>Em breve</button>';
+  if (p) {
+    if (p.fase === 'pausado') botao = `<button type="button" class="btn btn-prim" data-acao="instalar">${icone('play')}Continuar</button>`;
+    else if (p.fase === 'instalando') botao = '<button type="button" class="btn btn-sec" disabled>Instalando…</button>';
+    else botao = `<button type="button" class="btn btn-sec" data-acao="pausar">${icone('pausa')}Pausar</button>`;
+  } else if (j.rodando) botao = '<button type="button" class="btn btn-jogando" disabled>Jogando…</button>';
+  else if (j.emBreve) {
+    botao = j.avisar
+      ? `<button type="button" class="btn btn-avisando" data-acao="avisar" title="Clique pra desligar o aviso">✓ Vou te avisar</button>`
+      : `<button type="button" class="btn btn-avisar" data-acao="avisar">${icone('sino')}Me avise</button>`;
+  }
   else if (!j.instalado) botao = `<button type="button" class="btn btn-prim" data-acao="instalar">${icone('baixar')}Instalar</button>`;
   else if (j.atualizacao) botao = `<button type="button" class="btn btn-atual" data-acao="instalar">${icone('baixar')}Atualizar</button>`;
   else botao = `<button type="button" class="btn btn-jogar" data-acao="jogar">${icone('play')}Jogar</button>`;
@@ -881,24 +1063,39 @@ function renderAcao(forcar) {
   let meio;
   if (p) {
     const porc = pct(p);
+    const rotulo = { fila: 'Na fila', pausado: 'Pausado', reconectando: 'Reconectando', instalando: 'Instalando' }[p.fase]
+      || (j.instalado ? 'Atualizando' : 'Baixando');
     meio = `<div class="progresso">
-        <div class="progresso-txt"><span>${j.instalado ? 'Atualizando' : 'Baixando'}</span><span class="progresso-num">${textoProgresso(p)}</span></div>
-        <div class="trilho"><div class="enchimento ${p.fase === 'instalando' ? 'indet' : ''}" style="width:${p.fase === 'instalando' ? 100 : porc}%"></div></div>
+        <div class="progresso-txt"><span class="rotulo">${rotulo}</span><span class="progresso-num">${textoProgresso(p)}</span></div>
+        <div class="trilho"><div class="enchimento ${p.fase === 'instalando' ? 'indet' : ''} ${p.fase === 'pausado' ? 'pausado' : ''}" style="width:${p.fase === 'instalando' ? 100 : porc}%"></div></div>
       </div>`;
+  } else if (j.emBreve) {
+    const quando = j.lancamento ? Date.parse(j.lancamento) : NaN;
+    const stats = Number.isNaN(quando)
+      ? [['calendario', 'Lançamento', 'Data a confirmar']]
+      : [['calendario', 'Lançamento', fmtDataHora(quando)], ['relogio', 'Faltam', textoContagem(quando), quando]];
+    meio = `<div class="stats">${stats.map(([ic, k, v, alvo]) =>
+      `<div class="stat">${icone(ic)}<span class="stat-txt"><span class="stat-k">${k}</span><span class="stat-v ${alvo ? 'contagem' : ''}" ${alvo ? `data-contagem="${alvo}"` : ''}>${esc(v)}</span></span></div>`).join('')}</div>`;
   } else {
-    const stats = j.instalado
+    const ex = ui.extras[j.id] || {};
+    const dl = typeof ex.downloads === 'number' ? ['baixar', 'Downloads', fmtNum(ex.downloads)] : null;
+    // Em ordem de importância: o que não couber na largura da janela fica escondido.
+    const stats = (j.instalado
       ? [
         ['calendario', 'Última sessão', fmtData(j.instalado.ultimaVez)],
         ['relogio', 'Tempo de jogo', fmtTempo(j.instalado.tempoJogado)],
         ['etiqueta', 'Versão', j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao],
         ['disco', 'Espaço em disco', fmtBytes(j.instalado.tamanho)],
+        dl,
       ]
-      : [['etiqueta', 'Versão', j.versao || '—'], ['disco', 'Download', j.tamanho || '—']];
+      : [['etiqueta', 'Versão', j.versao || '—'], ['disco', 'Download', j.tamanho || '—'], dl]).filter(Boolean);
     meio = `<div class="stats">${stats.map(([ic, k, v]) =>
       `<div class="stat">${icone(ic)}<span class="stat-txt"><span class="stat-k">${k}</span><span class="stat-v">${esc(v)}</span></span></div>`).join('')}</div>`;
   }
 
-  const extras = j.instalado && !p
+  const extras = p
+    ? (p.fase === 'instalando' ? '' : `<div class="extras"><button type="button" class="icone" data-acao="cancelar" title="Cancelar download">${icone('fechar')}</button></div>`)
+    : j.instalado
     ? `<div class="extras ${ui.menuAberto ? 'aberto' : ''}">
         <button type="button" class="icone menu-btn" data-menu title="Opções do jogo">${icone('engrenagem')}</button>
         <div class="menu">
@@ -912,11 +1109,18 @@ function renderAcao(forcar) {
     : '';
 
   el.dataset.modo = p ? 'prog' : 'normal';
-  el.innerHTML = botao + meio + extras;
+  el.dataset.fase = p ? p.fase : '';
+  el.innerHTML = (botao || '') + meio + extras;
 }
 
 function textoProgresso(p) {
   if (p.fase === 'instalando') return 'Instalando…';
+  if (p.fase === 'fila') return p.posicao ? `Esperando a vez · ${p.posicao}º na fila` : 'Esperando a vez';
+  if (p.fase === 'reconectando') return p.erro || 'Reconectando…';
+  if (p.fase === 'pausado') {
+    const quanto = p.total ? `${pct(p)}% · ${fmtBytes(p.baixado)} de ${fmtBytes(p.total)}` : (p.baixado ? `${fmtBytes(p.baixado)} já baixados` : '');
+    return [p.erro, quanto].filter(Boolean).join(' · ') || 'Clique em Continuar';
+  }
   if (!p.baixado) return 'Conectando…';
   const total = p.total ? fmtBytes(p.total) : '?';
   const vel = p.vel ? ` · ${fmtBytes(p.vel)}/s` : '';
@@ -957,6 +1161,10 @@ function aplicarVisual(v) {
 function aplicar(r) {
   aplicarVisual(r.visual);
   ui.jogos = r.jogos;
+  for (const j of r.jogos) {
+    if (j.download) ui.progresso[j.id] = { ...(ui.progresso[j.id] || {}), id: j.id, ...j.download };
+    else delete ui.progresso[j.id];
+  }
   ui.online = r.online;
   if (!ui.jogos.some((j) => j.id === ui.selecionado)) ui.selecionado = ui.jogos[0] ? ui.jogos[0].id : null;
 }
@@ -1058,7 +1266,7 @@ function atualizarJogoNaTela(id) {
 }
 
 async function baixarJogo(j, textoOk) {
-  ui.progresso[j.id] = { id: j.id, fase: 'baixando', baixado: 0, total: 0 };
+  ui.progresso[j.id] = { ...(ui.progresso[j.id] || { baixado: 0, total: 0 }), id: j.id, fase: 'fila', erro: '' };
   atualizarJogoNaTela(j.id);
   const r = await tlw.instalar(j.id);
   if (r && r.ok) toast(textoOk || (r.atualizou ? `${j.nome} atualizado!` : `${j.nome} instalado! Bora jogar.`), 'ok');
@@ -1109,6 +1317,12 @@ $('#detalhe').addEventListener('click', async (e) => {
         break;
       case 'verificar': await verificarJogo(j); break;
       case 'cancelar': await tlw.cancelar(id); break;
+      case 'pausar': await tlw.pausar(id); break;
+      case 'avisar': {
+        const r = await tlw.chamar('avisar', { id, ligado: !j.avisar });
+        toast(r.avisar ? `Pronto! Você recebe um aviso quando ${j.nome} sair.` : 'Aviso desligado.', r.avisar ? 'ok' : '');
+        break;
+      }
       case 'jogar': await tlw.jogar(id); break;
       case 'desinstalar': {
         const r = await tlw.desinstalar(id, j.nome);
@@ -1119,12 +1333,41 @@ $('#detalhe').addEventListener('click', async (e) => {
       default: break;
     }
   } catch (err) {
-    delete ui.progresso[id];
-    atualizarJogoNaTela(id);
     toast(limparErro(err), 'erro');
+    await atualizarLocal().catch(() => {});
   }
   return undefined;
 });
+
+// Galeria e histórico (cliques dentro da página do jogo).
+$('#detalhe').addEventListener('click', (e) => {
+  const f = e.target.closest('[data-foto]');
+  if (f) { const j = jogoSel(); if (j) abrirVisor(fotosDe(j), Number(f.dataset.foto)); return; }
+  if (e.target.closest('[data-historico]')) {
+    const j = jogoSel();
+    if (!j) return;
+    ui.historicoTodos[j.id] = !ui.historicoTodos[j.id];
+    renderHistorico(j);
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (!visorAberto()) return;
+  if (e.key === 'Escape') { e.stopPropagation(); fecharVisor(); }
+  if (e.key === 'ArrowLeft') moverVisor(-1);
+  if (e.key === 'ArrowRight') moverVisor(1);
+}, true);
+
+// Contagem regressiva dos lançamentos (atualiza a cada segundo).
+setInterval(() => {
+  let chegou = false;
+  document.querySelectorAll('[data-contagem]').forEach((el) => {
+    const alvo = Number(el.dataset.contagem);
+    el.textContent = textoContagem(alvo);
+    if (alvo <= Date.now() && !el.dataset.chegou) { el.dataset.chegou = '1'; chegou = true; }
+  });
+  if (chegou) setTimeout(() => { atualizarLocal().catch(() => {}); }, 2500);
+}, 1000);
 
 $('#detalhe').addEventListener('keydown', (e) => {
   const card = e.target.closest('[data-card]');
@@ -1133,13 +1376,14 @@ $('#detalhe').addEventListener('keydown', (e) => {
 
 tlw.aoProgresso((d) => {
   if (d.fase === 'fim') delete ui.progresso[d.id];
-  else ui.progresso[d.id] = d;
+  else ui.progresso[d.id] = { ...(ui.progresso[d.id] || {}), ...d };
   renderLista();
   if (naGrade()) atualizarCard(d.id);
   else if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
 });
 
 tlw.aoMudar(() => { atualizarLocal(); });
+tlw.aoEvento('lancou', (d) => toast(`🎉 ${d.nome} chegou! Já dá pra instalar.`, 'ok'));
 
 // ───────────── aba Configurações ─────────────
 
