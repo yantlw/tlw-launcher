@@ -1396,25 +1396,189 @@ function hashArquivo(arquivo) {
 
 // Roda o instalador depois que o launcher fechar. Se a pessoa recusar o aviso de
 // permissão do Windows, reabre o launcher atual (sem tentar atualizar de novo agora).
-function rodarInstaladorEFechar(setup) {
+// Script do PowerShell que roda DEPOIS que o launcher fecha:
+//   1) mostra uma janelinha "Atualizando…" (pra pessoa não ficar sem ver nada);
+//   2) espera o launcher fechar de vez e roda o instalador (com o aviso de permissão do Windows);
+//   3) quando o instalador termina, reabre o launcher ele mesmo (não depende do instalador);
+//   4) anota tudo em %TEMP%\TLW-Games-Launcher-atualizacao.log (pra descobrir o que deu errado, se der).
+const SCRIPT_ATUALIZAR = String.raw`
+$ErrorActionPreference = 'Continue'
+try { Set-Content -LiteralPath $env:TLW_SINAL -Value 'ok' -Encoding ASCII } catch {}
+$log = Join-Path $env:TEMP 'TLW-Games-Launcher-atualizacao.log'
+function Log($t) { try { Add-Content -LiteralPath $log -Value ((Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '  ' + $t) -Encoding UTF8 } catch {} }
+$silencioso = $env:TLW_SILENCIOSO -eq '1'
+Log '----------------------------------------'
+Log ('atualizando para a versao ' + $env:TLW_VERSAO + ' (silencioso: ' + $silencioso + ')')
+Log ('instalador: ' + $env:TLW_SETUP)
+Log ('launcher: ' + $env:TLW_ATUAL)
+
+# ── janelinha ──
+$form = $null; $status = $null; $trilho = $null; $barra = $null; $pos = 0
+if ($silencioso) {
+  try {
+    Add-Type -AssemblyName System.Windows.Forms
+    Add-Type -AssemblyName System.Drawing
+    [System.Windows.Forms.Application]::EnableVisualStyles()
+    $cor = [System.Drawing.ColorTranslator]::FromHtml($env:TLW_COR)
+    $form = New-Object System.Windows.Forms.Form
+    $form.Text = 'TLW Games Launcher'
+    $form.FormBorderStyle = 'None'
+    $form.StartPosition = 'CenterScreen'
+    $form.ClientSize = New-Object System.Drawing.Size(380, 150)
+    $form.BackColor = [System.Drawing.ColorTranslator]::FromHtml('#14161d')
+    $form.ShowInTaskbar = $true
+    $form.TopMost = $true
+    try { $ico = [System.Drawing.Icon]::ExtractAssociatedIcon($env:TLW_ATUAL); $form.Icon = $ico } catch { $ico = $null }
+    if ($ico) {
+      $img = New-Object System.Windows.Forms.PictureBox
+      $img.Image = $ico.ToBitmap(); $img.SizeMode = 'Zoom'
+      $img.SetBounds(166, 18, 48, 48)
+      $form.Controls.Add($img)
+    }
+    $titulo = New-Object System.Windows.Forms.Label
+    $titulo.Text = 'TLW GAMES LAUNCHER'
+    $titulo.ForeColor = [System.Drawing.Color]::White
+    $titulo.Font = New-Object System.Drawing.Font('Segoe UI', 10, [System.Drawing.FontStyle]::Bold)
+    $titulo.TextAlign = 'MiddleCenter'
+    $titulo.SetBounds(0, 72, 380, 22)
+    $form.Controls.Add($titulo)
+    $trilho = New-Object System.Windows.Forms.Panel
+    $trilho.BackColor = [System.Drawing.ColorTranslator]::FromHtml('#2a2f3c')
+    $trilho.SetBounds(24, 102, 332, 4)
+    $barra = New-Object System.Windows.Forms.Panel
+    $barra.BackColor = $cor
+    $barra.SetBounds(0, 0, 90, 4)
+    $trilho.Controls.Add($barra)
+    $form.Controls.Add($trilho)
+    $status = New-Object System.Windows.Forms.Label
+    $status.ForeColor = [System.Drawing.ColorTranslator]::FromHtml('#9aa3b5')
+    $status.Font = New-Object System.Drawing.Font('Segoe UI', 8.5)
+    $status.SetBounds(24, 114, 332, 20)
+    $status.Text = 'Preparando a atualização…'
+    $form.Controls.Add($status)
+    $form.Show()
+    $form.Activate()
+    [System.Windows.Forms.Application]::DoEvents()
+  } catch { Log ('sem janelinha: ' + $_); $form = $null }
+}
+function Texto($t) { Log $t; if ($status) { $status.Text = $t; [System.Windows.Forms.Application]::DoEvents() } }
+function Esperar($ms) {
+  $fim = (Get-Date).AddMilliseconds($ms)
+  do {
+    if ($form) {
+      $script:pos = ($script:pos + 7) % 422
+      $barra.Left = $script:pos - 90
+      [System.Windows.Forms.Application]::DoEvents()
+    }
+    Start-Sleep -Milliseconds 30
+  } while ((Get-Date) -lt $fim)
+}
+
+# ── espera o launcher fechar (até 20s) ──
+$nome = [System.IO.Path]::GetFileNameWithoutExtension($env:TLW_ATUAL)
+for ($i = 0; $i -lt 200 -and (Get-Process -Name $nome -ErrorAction SilentlyContinue); $i++) { Esperar 100 }
+Esperar 500
+
+# ── roda o instalador ──
+$codigo = $null
+try {
+  if ($silencioso) {
+    Texto 'Instalando… (se o Windows pedir permissão, clique em Sim)'
+    $p = Start-Process -FilePath $env:TLW_SETUP -ArgumentList '/S', '--updated' -Verb RunAs -PassThru -ErrorAction Stop
+  } else {
+    $p = Start-Process -FilePath $env:TLW_SETUP -Verb RunAs -PassThru -ErrorAction Stop
+  }
+  $null = $p.Handle   # sem isso o PowerShell às vezes não devolve o código de saída
+  Log ('instalador aberto (processo ' + $p.Id + ')')
+  if ($silencioso) { Texto 'Instalando a versão nova… (pode levar até 1 minuto)' }
+  while (-not $p.HasExited) { Esperar 200 }
+  $codigo = $p.ExitCode
+  Log ('instalador terminou, codigo ' + $codigo)
+} catch {
+  Log ('o instalador nao abriu (permissao recusada?): ' + $_)
+}
+
+# ── reabre o launcher ──
+if ($silencioso) {
+  if ($codigo -eq 0) { Texto 'Pronto! Abrindo o launcher…' } else { Texto 'Não deu pra atualizar agora. Abrindo o launcher…' }
+  Esperar 800
+  # O launcher abre com --pular-atualizacao: se por algum motivo a versão nova não entrou,
+  # ele não fica em loop tentando instalar de novo (tenta na próxima vez que abrir).
+  try { Start-Process -FilePath $env:TLW_ATUAL -ArgumentList $env:TLW_ARGS_VOLTA.Split(' ') ; Log 'launcher reaberto' } catch { Log ('nao consegui reabrir o launcher: ' + $_) }
+  Esperar 1500
+} elseif ($codigo -ne 0) {
+  # Instalador normal (versão portátil): cancelou ou recusou a permissão → volta pro launcher antigo.
+  try { Start-Process -FilePath $env:TLW_ATUAL -ArgumentList $env:TLW_ARGS_VOLTA.Split(' ') ; Log 'launcher antigo reaberto' } catch { Log ('nao consegui reabrir: ' + $_) }
+}
+if ($form) { $form.Close() }
+Remove-Item -LiteralPath $env:TLW_SETUP -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath $PSCommandPath -Force -ErrorAction SilentlyContinue
+`;
+
+function corDoVisual() {
+  const v = (visual && visual.cor) || ((lerJSON(ARQ_CACHE, {}) || {}).launcher || {}).cor || '';
+  return /^#[0-9a-f]{6}$/i.test(v) ? v : '#7b2cff';
+}
+
+function logAtualizacao(t) {
+  try {
+    const d = new Date();
+    const z = (n) => String(n).padStart(2, '0');
+    const quando = `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+    fs.appendFileSync(path.join(os.tmpdir(), 'TLW-Games-Launcher-atualizacao.log'), `${quando}  [launcher] ${t}\r\n`);
+  } catch { /* ok */ }
+}
+
+// Roda o atualizador e fecha o launcher. Só fecha se tiver CERTEZA de que o atualizador
+// começou: se não começar em alguns segundos, devolve false e o launcher abre normal.
+async function rodarInstaladorEFechar(setup, versao) {
   const atual = exeAtual() || process.execPath;
   const oculto = process.argv.includes('--oculto');
-  const argsSetup = INSTALADO ? "'/S','--updated','--force-run'" : "''";
-  const argsVolta = `'--pular-atualizacao'${oculto ? ",'--oculto'" : ''}`;
+  const argsVolta = ['--pular-atualizacao', ...(oculto ? ['--oculto'] : [])].join(' ');
   if (process.platform === 'win32') {
-    const ps = [
-      'Start-Sleep -Seconds 2',
-      'try {',
-      `  Start-Process -FilePath $env:TLW_SETUP ${INSTALADO ? `-ArgumentList ${argsSetup} ` : ''}-Verb RunAs -Wait -ErrorAction Stop`,
-      '} catch {',
-      `  Start-Process -FilePath $env:TLW_ATUAL -ArgumentList ${argsVolta}`,
-      '}',
-      'Remove-Item -LiteralPath $env:TLW_SETUP -Force -ErrorAction SilentlyContinue',
-    ].join('\n');
-    spawn('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-Command', ps], {
-      detached: true, stdio: 'ignore', windowsHide: true,
-      env: { ...process.env, TLW_SETUP: setup, TLW_ATUAL: atual },
-    }).unref();
+    const ps1 = path.join(os.tmpdir(), 'TLW-Games-Launcher-atualizar.ps1');
+    const sinal = path.join(os.tmpdir(), 'TLW-Games-Launcher-atualizar.ok');
+    const powershell = path.join(process.env.SystemRoot || process.env.windir || 'C:\\Windows',
+      'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+    try {
+      fs.rmSync(sinal, { force: true });
+      fs.writeFileSync(ps1, `\ufeff${SCRIPT_ATUALIZAR.trim()}\r\n`.replace(/\r?\n/g, '\r\n'), 'utf8');
+    } catch (e) {
+      logAtualizacao(`não consegui criar o script: ${e.message}`);
+      return false;
+    }
+    logAtualizacao(`versão ${versao}: abrindo o atualizador (${fs.existsSync(powershell) ? powershell : 'powershell.exe'})`);
+    let erroSpawn = null;
+    try {
+      const filho = spawn(fs.existsSync(powershell) ? powershell : 'powershell.exe',
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden', '-File', ps1], {
+          detached: true, stdio: 'ignore', windowsHide: true,
+          env: {
+            ...process.env,
+            TLW_SETUP: setup,
+            TLW_ATUAL: atual,
+            TLW_VERSAO: String(versao || ''),
+            TLW_SILENCIOSO: INSTALADO ? '1' : '0',
+            TLW_ARGS_VOLTA: argsVolta,
+            TLW_COR: corDoVisual(),
+            TLW_SINAL: sinal,
+          },
+        });
+      filho.on('error', (e) => { erroSpawn = e; });
+      filho.unref();
+    } catch (e) { erroSpawn = e; }
+    // Espera o script avisar que começou (até 10s).
+    const limite = Date.now() + 10000;
+    while (!erroSpawn && !fs.existsSync(sinal) && Date.now() < limite) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    if (erroSpawn || !fs.existsSync(sinal)) {
+      logAtualizacao(`o atualizador não começou: ${erroSpawn ? erroSpawn.message : 'sem resposta em 10s'}`);
+      return false;
+    }
+    try { fs.rmSync(sinal, { force: true }); } catch { /* ok */ }
+    logAtualizacao('atualizador começou; fechando o launcher');
   } else {
     // (só pra testar fora do Windows)
     spawn('sh', ['-c', 'sleep 1; chmod +x "$0"; "$0" "$@" &', setup, ...(INSTALADO ? ['/S', '--updated', '--force-run'] : [])],
@@ -1424,6 +1588,7 @@ function rodarInstaladorEFechar(setup) {
   setTimeout(() => {
     try { require('electron').app.exit(0); } catch { process.exit(0); }
   }, 300);
+  return true;
 }
 
 // Devolve true se achou versão nova (o launcher vai fechar e o instalador assume).
@@ -1451,10 +1616,11 @@ async function atualizarLauncher(mostrar) {
     try { fs.rmSync(setup, { force: true }); } catch { /* ok */ }
     return false; // sem internet etc.: segue com o launcher atual
   }
-  avisar(INSTALADO ? 'Instalando… (aceite o aviso do Windows)' : 'Abrindo o instalador…', 1);
-  await new Promise((r) => setTimeout(r, 900));
-  rodarInstaladorEFechar(setup);
-  return true;
+  avisar(INSTALADO ? 'Preparando a instalação…' : 'Abrindo o instalador…', 1);
+  if (await rodarInstaladorEFechar(setup, info.versao)) return true;
+  avisar('Não deu pra atualizar agora. Abrindo…', 1);
+  await new Promise((r) => setTimeout(r, 1200));
+  return false;
 }
 
 // Janelinha própria, usada só quando o launcher roda dentro de um .exe antigo
