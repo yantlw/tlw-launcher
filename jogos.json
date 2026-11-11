@@ -11,19 +11,21 @@
     {
       "id": "bar-do-chara-fighter",
       "nome": "Super Bar do Chará Fighter",
-      "versao": "0.1.1",
+      "versao": "0.1.2",
       "genero": "Luta, Ação",
       "desenvolvedor": "TLW Games",
       "descricao": "Os lendários frequentadores do Bar do Chará chegaram, e agora é na porrada!\n\nSuper Bar do Chará Fighter é um jogo de luta 2D em pixel art que bebe direto da fonte dos clássicos de fliperama dos anos 90. Escolha seu lutador, domine os golpes especiais e mostre quem manda no bar.\n\n8 LUTADORES, CADA UM COM SEU ESTILO\nChará e seu facão, Cururoca, o garçom das bandejadas, Yantlw, o karateca de kimono roxo, Jurureca e suas correntes, Big Hand e suas mãozadas, SpeedMestre, Papa-tudo e o pesado Gordão de Caxias. Cada um tem golpes especiais próprios, versões EX, um Super e uma Ruptura devastadora pra virar a luta no último suspiro.\n\nMODOS DE JOGO\n• Arcade: enfrente todos os lutadores até o seu rival e conquiste o troféu de campeão.\n• Versus: desafie um amigo no mesmo PC, com os dois escolhendo o lutador ao mesmo tempo.\n• Equipes 3×3: monte seu time e troque de lutador no meio da porradaria.\n• Treino: com tutorial, lista de golpes, gravação de sequências e caixas de colisão.\n\n8 CENÁRIOS COM MÚSICA PRÓPRIA\nDo Barraco do Chará ao Hospício Paulo Guedes, passando pela Big House, o Paraíso dos Cromados, a Casa da Mãozada, o Poeta Del Toro, o Dojo Violeta e o Estúdio X. Cada cenário tem uma trilha pesada, feita pra porradaria.\n\nE MAIS\n• CPU com estilo próprio: cada lutador joga do seu jeito.\n• Galeria com artes e músicas que você libera jogando.\n• Estatísticas de vitórias, derrotas e lutadores favoritos.\n• Suporte a controle (Xbox e PlayStation) e teclado, com botões configuráveis.\n\nEM BREVE: Modo História e mais 16 lutadores já confirmados!",
-      "notas": "🎬 Abertura nova: intro TLW GAMES, aviso de saúde e tela de título com música-tema.\n🗺️ Cenário novo, Estúdio X: a casa do Gordão de Caxias. O Pátio do Vento virou Paraíso dos Cromados, e o Big House ganhou visual novo.\n🥊 Versus simultâneo: P1 e P2 escolhem o lutador ao mesmo tempo.\n👀 16 lutadores a caminho: já aparecem bloqueados na seleção.\n🤖 CPU com personalidade: cada lutador tem seu próprio estilo de luta.\n⚔️ Pulo por cima do adversário: pra escapar da parede. O dash está mais bonito e equilibrado, e a Barrigada de Caxias foi turbinada.\n🖼️ Galeria de desbloqueáveis: artes e músicas pra liberar jogando.\n🏠 Menu reorganizado: opção Sair do jogo e tutorial oferecido ao entrar no Treino.\n🔧 Correções: volume do narrador, música do Hospício, sprites que “pulavam” em alguns golpes e outros ajustes.",
+      "notas": "🎬 ABERTURA\nNOVO: intro da Chará Studios, que toca antes da intro da TLW Games.\nNova ordem da abertura: carregamento → aviso de saúde → Chará Studios → TLW Games → tela de título.\nQualquer botão pula cada intro direto pra próxima.\n⚡ CARREGAMENTO MAIS RÁPIDO\nO jogo agora mostra a abertura quase na hora. O resto carrega por trás enquanto rolam o aviso de saúde e as intros.\nSe você pular tudo antes de terminar de carregar, aparece o facão girando no canto até ficar pronto.\n🎮 CONTROLES\nNovo aviso de controle conectado, no estilo console:\nCard no canto da tela com ícone do controle, número do jogador (P1/P2) e as luzinhas de LED.\nIdentifica sozinho o tipo de controle: Xbox, PlayStation ou Nintendo Switch.\nAzul pro P1 e vermelho pro P2.\nQuando desconecta, o aviso fica laranja e avisa que o jogo foi pausado.\n🔧 CORREÇÕES\nA música da tela de título agora toca normalmente, sem precisar conectar um controle.\nA música da tela de título não reinicia mais ao entrar no menu principal.\nCorrigido o vídeo da intro TLW Games que ficava preto, só com o áudio.\nCorrigido um falso aviso de “arquivo não encontrado” ao transformar o jogo em .exe.",
       "tamanho": "124,7 MB",
       "tipo": "exe",
       "arquivo": "Super-Bar-do-Char-Fighter.exe",
       "repo": "bar-do-char--fighter",
       "download": [
-        "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.1.1/Super-Bar-do-Char-Fighter.exe"
+        "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.1.2/Super-Bar-do-Char-Fighter.exe"
       ],
-      "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/d8f6d23e-76ff-419a-9329-6d45aa-mw9zs5fh.png"
+      "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/d8f6d23e-76ff-419a-9329-6d45aa-mw9zs5fh.png",
+      "atualizadoEm": "2026-11-11T20:33:59.006Z",
+      "lancadoEm": "2026-11-11T20:33:59.006Z"
     },
     {
       "id": "f",
