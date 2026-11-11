@@ -4,5 +4,11 @@
     "index.html",
     "launcher.js"
   ],
-  "publicadoEm": "2026-11-11T04:04:49.515Z"
+  "publicadoEm": "2026-11-11T04:04:49.515Z",
+  "exe": {
+    "url": "https://github.com/yantlw/tlw-launcher/releases/download/launcher-20261111050623/TLW-Games-Launcher.exe",
+    "sha256": "b2218311cc73f435228b4f401a9589e407a432b54f2c841e0d9ee7380672d362",
+    "tamanho": 74572564,
+    "publicadoEm": "2026-11-11T05:06:23.665Z"
+  }
 }
