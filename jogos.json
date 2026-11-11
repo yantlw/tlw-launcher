@@ -3,7 +3,9 @@
     "nome": "TLW Games",
     "cor": "#4400ff",
     "cor2": "#a600ff",
-    "logo": "https://i.imgur.com/Je0x2oT.png"
+    "logo": "https://i.imgur.com/Je0x2oT.png",
+    "discord": "1569921877164695613",
+    "discordLink": "https://github.com/yantlw/tlw-launcher/releases/tag/TLW-Launcher"
   },
   "jogos": [
     {
