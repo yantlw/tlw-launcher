@@ -498,6 +498,47 @@ body.modo-grade .lateral { display: none; }
 
 
 
+/* ───────── aba Downloads ───────── */
+.aba .contador { margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: inline-grid; place-items: center;
+  font-size: 11px; font-weight: 800; background: var(--acento); color: #fff; }
+.aba .contador:empty { display: none; }
+.config-miolo.dl-miolo { max-width: 960px; }
+.dl-topo { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+.dl-topo > div:first-child { flex: 1; min-width: 260px; }
+.dl-topo .sub { margin-bottom: 0; }
+.dl-acoes .btn-peq { display: inline-flex; align-items: center; gap: 6px; }
+.dl-acoes .btn-peq svg { width: 15px; height: 15px; }
+.dl-opcoes { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.dl-opcoes label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--txt2); }
+.dl-opcoes select { height: 34px; padding: 0 10px; border-radius: 8px; background: var(--painel2); border: 1px solid var(--borda); color: var(--txt); font: inherit; font-size: 13px; }
+.dl-secao { margin-bottom: 22px; }
+.dl-secao h3 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); margin: 0 0 10px 2px; }
+.dl-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); margin-bottom: 8px; }
+.dl-item .arte.dl-capa { width: 120px; height: 68px; flex: none; border-radius: 8px; }
+.dl-item.grande { padding: 16px 18px; border-color: color-mix(in srgb, var(--acento) 45%, transparent); }
+.dl-item.grande .arte.dl-capa { width: 184px; height: 104px; }
+.dl-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.dl-nome { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-nome small { font-weight: 600; color: var(--txt3); font-size: 12px; margin-left: 6px; }
+.dl-txt { font-size: 12.5px; color: var(--txt2); font-variant-numeric: tabular-nums; }
+.dl-txt.erro { color: #ffb4a0; }
+.dl-item .trilho { height: 6px; }
+.dl-acoes { display: flex; gap: 6px; flex: none; align-items: center; }
+.dl-acoes .icone { width: 34px; height: 34px; border-radius: 8px; background: rgba(255, 255, 255, .07); color: #c3c8d4; display: grid; place-items: center; }
+.dl-acoes .icone:hover:not(:disabled) { background: rgba(255, 255, 255, .15); }
+.dl-acoes .icone:disabled { opacity: .3; cursor: default; }
+.dl-acoes .icone svg { width: 17px; height: 17px; }
+.dl-acoes .seta-baixo svg { transform: rotate(180deg); }
+.dl-vazio { padding: 40px 20px; text-align: center; color: var(--txt3); border: 1px dashed var(--borda); border-radius: 12px; }
+.tag-auto { padding: 1px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; background: rgba(255, 255, 255, .08); color: var(--txt2); margin-left: 6px; vertical-align: 2px; }
+
+/* ───────── selos NOVO / ATUALIZADO ───────── */
+.item-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.selo-mini { flex: none; padding: 0 6px; border-radius: 4px; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; line-height: 16px; }
+.selo-mini.novo, .card-selo.novo { background: linear-gradient(90deg, var(--acento), var(--acento2)); color: #fff; }
+.selo-mini.atualizado { background: rgba(77, 166, 255, .18); color: #8cc8ff; }
+.card-selo.atualizado { color: #8cc8ff; }
+
 @media (max-width: 1100px) {
   .info { grid-template-columns: 1fr; }
   .stats { column-gap: 22px; }
@@ -514,9 +555,9 @@ body.desconectado .caiu { display: grid; }
 
 
 /* ───────── aba Configurações ───────── */
-body.ver-config .corpo { display: none; }
+body.ver-config .corpo, body.ver-downloads .corpo { display: none; }
 .config-pagina { display: none; flex: 1; overflow-y: auto; }
-body.ver-config .config-pagina { display: block; }
+body.ver-config #config, body.ver-downloads #downloads { display: block; }
 .config-miolo { max-width: 780px; padding: 30px 36px 60px; }
 .config-miolo h2 { font: 900 26px var(--titulo); margin-bottom: 4px; }
 .config-miolo .sub { color: var(--txt2); margin-bottom: 22px; }
@@ -537,6 +578,7 @@ body.ver-config .config-pagina { display: block; }
 .chave input:checked + span::after { transform: translateX(20px); background: #fff; }
 .pasta-caminho { font-family: Consolas, monospace; font-size: 12.5px; color: var(--txt); background: var(--painel2); padding: 6px 10px; border-radius: 6px; margin-top: 6px; word-break: break-all; user-select: text; }
 .botoes { display: flex; gap: 8px; flex-wrap: wrap; flex: none; }
+.cfg-select { height: 36px; padding: 0 10px; border-radius: 8px; background: var(--painel2); border: 1px solid var(--borda); color: var(--txt); font: inherit; font-size: 13px; flex: none; }
 .btn-peq { height: 36px; padding: 0 14px; border-radius: 8px; font-weight: 700; font-size: 13px; background: var(--painel2); border: 1px solid var(--borda); }
 .btn-peq:not(:disabled):hover { filter: brightness(1.2); }
 .btn-peq:disabled { opacity: .5; cursor: default; }
@@ -553,7 +595,7 @@ body.ver-config .config-pagina { display: block; }
 <body>
 <header class="topo">
     <div class="marca"><span class="marca-tlw">TLW</span><span class="marca-games">GAMES</span></div>
-    <nav class="abas"><button class="aba ativa" type="button" data-aba="biblioteca"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Biblioteca</button><button class="aba" type="button" data-aba="config"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.7 7.7 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Configurações</button></nav>
+    <nav class="abas"><button class="aba ativa" type="button" data-aba="biblioteca"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Biblioteca</button><button class="aba" type="button" data-aba="downloads"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Downloads<span class="contador" id="dl-contador"></span></button><button class="aba" type="button" data-aba="config"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-2.6-1.5L14 2.5h-4l-.4 2.5A7.6 7.6 0 0 0 7 6.5l-2.4-1-2 3.4 2 1.6a7.7 7.7 0 0 0 0 3l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.4 1 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Configurações</button></nav>
     <div class="topo-dir">
       <span id="status" class="status"></span>
       <button id="btn-recarregar" class="icone" type="button" title="Procurar jogos e atualizações"></button>
@@ -570,6 +612,7 @@ body.ver-config .config-pagina { display: block; }
       <div class="carregando"><div class="spinner"></div>Carregando biblioteca…</div>
     </main>
   </div>
+  <section id="downloads" class="config-pagina"></section>
   <section id="config" class="config-pagina"></section>
 
   <div id="toasts" class="toasts"></div>
@@ -600,6 +643,7 @@ const salvarPrefs = () => {
   try { localStorage.setItem(PREFS, JSON.stringify({ modo: ui.modo, ordem: ui.ordem, filtro: ui.filtro })); } catch { /* ok */ }
 };
 const $ = (s) => document.querySelector(s);
+const foraDaBiblioteca = () => document.body.classList.contains('ver-config') || document.body.classList.contains('ver-downloads');
 
 // ───────────── formatação ─────────────
 
@@ -672,6 +716,10 @@ const ICONES = {
   ordenar: '<svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
   setaBaixo: '<svg class="seta-baixo" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   voltar: '<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  seta: '<svg viewBox="0 0 24 24"><path d="M12 19V5m0 0-6 6m6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  primeiro: '<svg viewBox="0 0 24 24"><path d="M12 20V9m0 0-5 5m5-5 5 5M5 4h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  mover: '<svg viewBox="0 0 24 24"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4.6l2 2.2h8.4A1.5 1.5 0 0 1 21 8.7v9.8a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5zM9 13.5h6m-2.5-2.5 2.5 2.5-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  lupa: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="m16 16 4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
   pausa: '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
   fechar: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
   sino: '<svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 1 1 12 0c0 4.5 2 6 2 6H4s2-1.5 2-6zm4.3 9.5a2 2 0 0 0 3.4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -695,7 +743,7 @@ function iniciais(nome) {
 
 // Tamanho (em px de tela) de cada lugar onde a capa aparece: a imagem chega já reduzida
 // com qualidade pelo launcher, sem serrilhado. O hero é grande, então usa a original.
-const TAMANHO_ARTE = { mini: [44, 44], 'card-arte': [440, 248] };
+const TAMANHO_ARTE = { mini: [44, 44], 'card-arte': [440, 248], 'dl-capa': [184, 104] };
 
 function srcImagem(u, w, h, modo) {
   const d = Math.min(3, window.devicePixelRatio || 1);
@@ -825,7 +873,7 @@ function renderLista() {
         const [sub, cls] = situacao(j);
         return `<button type="button" class="item ${j.id === ui.selecionado ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
           ${arte(j, 'mini')}
-          <span class="item-txt"><span class="item-nome">${esc(j.nome)}</span><span class="item-sub">${sub}</span></span>
+          <span class="item-txt"><span class="item-linha"><span class="item-nome">${esc(j.nome)}</span>${seloMini(j)}</span><span class="item-sub">${sub}</span></span>
         </button>`;
       }).join('')).join('')
     : `<p class="vazio-lista">${vazioFiltrado()}</p>`;
@@ -846,6 +894,16 @@ function seloCard(j) {
   if (j.rodando) return '<span class="card-selo rodando">Jogando</span>';
   if (j.atualizacao) return '<span class="card-selo atualizar">Atualização</span>';
   if (j.emBreve) return '<span class="card-selo embreve">Em breve</span>';
+  if (j.selo === 'novo') return '<span class="card-selo novo">Novo</span>';
+  if (j.selo === 'atualizado') return '<span class="card-selo atualizado">Atualizado</span>';
+  return '';
+}
+
+// Selinho ao lado do nome na lista (some quando o jogo já tem um estado mais importante).
+function seloMini(j) {
+  if (j.rodando || j.atualizacao || j.emBreve || ui.progresso[j.id]) return '';
+  if (j.selo === 'novo') return '<span class="selo-mini novo">NOVO</span>';
+  if (j.selo === 'atualizado') return '<span class="selo-mini atualizado">ATUALIZADO</span>';
   return '';
 }
 
@@ -1057,7 +1115,7 @@ function renderAcao(forcar) {
       ? [
         ['calendario', 'Última sessão', fmtData(j.instalado.ultimaVez)],
         ['relogio', 'Tempo de jogo', fmtTempo(j.instalado.tempoJogado)],
-        ['etiqueta', 'Versão', j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao],
+        ['etiqueta', 'Versão', j.instalado.versao === '0' ? `antiga → ${j.versao}` : (j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao)],
         ['disco', 'Espaço em disco', fmtBytes(j.instalado.tamanho)],
         dl,
       ]
@@ -1075,8 +1133,16 @@ function renderAcao(forcar) {
           <button type="button" data-acao="atalho">${icone('atalho')}${j.instalado.atalho ? 'Recriar atalho na área de trabalho<span class="feito">✓ criado</span>' : 'Criar atalho na área de trabalho'}</button>
           <button type="button" data-acao="verificar">${icone('escudo')}Verificar e reparar arquivos</button>
           <button type="button" data-acao="pasta">${icone('pasta')}Abrir pasta do jogo</button>
+          <button type="button" data-acao="mover">${icone('mover')}Mover pra outra pasta ou disco…</button>
           <hr>
           <button type="button" data-acao="desinstalar" class="perigo">${icone('lixo')}Desinstalar</button>
+        </div>
+      </div>`
+    : (!j.emBreve && !j.removido)
+    ? `<div class="extras ${ui.menuAberto ? 'aberto' : ''}">
+        <button type="button" class="icone menu-btn" data-menu title="Opções do jogo">${icone('engrenagem')}</button>
+        <div class="menu">
+          <button type="button" data-acao="localizar">${icone('lupa')}Já tenho esse jogo no PC…</button>
         </div>
       </div>`
     : '';
@@ -1088,16 +1154,25 @@ function renderAcao(forcar) {
 
 function textoProgresso(p) {
   if (p.fase === 'instalando') return 'Instalando…';
-  if (p.fase === 'fila') return p.posicao ? `Esperando a vez · ${p.posicao}º na fila` : 'Esperando a vez';
+  if (p.fase === 'fila') return p.erro || (p.posicao ? `Esperando a vez · ${p.posicao}º na fila` : 'Esperando a vez');
   if (p.fase === 'reconectando') return p.erro || 'Reconectando…';
   if (p.fase === 'pausado') {
-    const quanto = p.total ? `${pct(p)}% · ${fmtBytes(p.baixado)} de ${fmtBytes(p.total)}` : (p.baixado ? `${fmtBytes(p.baixado)} já baixados` : '');
+    const quanto = !p.baixado ? '' : p.total ? `${pct(p)}% · ${fmtBytes(p.baixado)} de ${fmtBytes(p.total)}` : `${fmtBytes(p.baixado)} já baixados`;
     return [p.erro, quanto].filter(Boolean).join(' · ') || 'Clique em Continuar';
   }
   if (!p.baixado) return 'Conectando…';
   const total = p.total ? fmtBytes(p.total) : '?';
   const vel = p.vel ? ` · ${fmtBytes(p.vel)}/s` : '';
-  return `${pct(p)}% · ${fmtBytes(p.baixado)} de ${total}${vel}`;
+  const falta = tempoRestante(p);
+  return `${pct(p)}% · ${fmtBytes(p.baixado)} de ${total}${vel}${falta ? ` · falta ${falta}` : ''}`;
+}
+
+function tempoRestante(p) {
+  if (!p.vel || !p.total || p.baixado >= p.total) return '';
+  const s = Math.ceil((p.total - p.baixado) / p.vel);
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')}s`;
+  return `${Math.floor(s / 3600)}h ${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}min`;
 }
 
 // ───────────── avisos ─────────────
@@ -1138,6 +1213,7 @@ function aplicar(r) {
     if (j.download) ui.progresso[j.id] = { ...(ui.progresso[j.id] || {}), id: j.id, ...j.download };
     else delete ui.progresso[j.id];
   }
+  atualizarContador();
   ui.online = r.online;
   if (!ui.jogos.some((j) => j.id === ui.selecionado)) ui.selecionado = ui.jogos[0] ? ui.jogos[0].id : null;
 }
@@ -1220,7 +1296,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (ui.orgAberto || ui.menuAberto) fecharMenus();
-  else if (ui.modo === 'grade' && ui.gradeAberta && !document.body.classList.contains('ver-config')) voltarPraGrade();
+  else if (ui.modo === 'grade' && ui.gradeAberta && !foraDaBiblioteca()) voltarPraGrade();
 });
 
 $('#lista').addEventListener('click', (e) => {
@@ -1303,6 +1379,8 @@ $('#detalhe').addEventListener('click', async (e) => {
         break;
       }
       case 'pasta': await tlw.abrirPasta(id); break;
+      case 'mover': await moverJogo(j); break;
+      case 'localizar': await localizarJogo(j); break;
       default: break;
     }
   } catch (err) {
@@ -1310,6 +1388,40 @@ $('#detalhe').addEventListener('click', async (e) => {
     await atualizarLocal().catch(() => {});
   }
   return undefined;
+});
+
+// "Já tenho esse jogo no PC": aponta a pasta e o launcher reconhece sem baixar de novo.
+async function localizarJogo(j) {
+  let pedido = { id: j.id, escolher: true };
+  if (!(cfgUI.dados || {}).exe && !(await tlw.chamar('config-ver')).exe) {
+    const p = prompt(`Em que pasta está ${j.nome}?`, '');
+    if (!p) return;
+    pedido = { id: j.id, pasta: p };
+  }
+  const r = await tlw.chamar('jogo-localizar', pedido);
+  if (r.cancelado) return;
+  toast(r.antiga
+    ? `Achei ${j.nome}, mas é uma versão antiga. Clique em Atualizar pra baixar só a nova.`
+    : `Pronto! ${j.nome} foi reconhecido, não precisa baixar de novo.`, 'ok');
+  await atualizarLocal();
+}
+
+// Muda só esse jogo de lugar (ex.: do C: pro D:).
+async function moverJogo(j) {
+  let pedido = { id: j.id, escolher: true };
+  if (!(cfgUI.dados || {}).exe && !(await tlw.chamar('config-ver')).exe) {
+    const p = prompt(`Pra qual pasta mover ${j.nome}?`, '');
+    if (!p) return;
+    pedido = { id: j.id, pasta: p };
+  }
+  const r = await tlw.chamar('jogo-mover', pedido);
+  if (r.cancelado) return;
+  toast(`${j.nome} agora fica em ${r.pasta}`, 'ok');
+  await atualizarLocal();
+}
+
+tlw.aoEvento('mover', (d) => {
+  if (d.fase === 'movendo') toast('Movendo o jogo… se for pra outro disco, pode levar uns minutos.');
 });
 
 // Galeria (cliques dentro da página do jogo).
@@ -1344,17 +1456,160 @@ $('#detalhe').addEventListener('keydown', (e) => {
 tlw.aoProgresso((d) => {
   if (d.fase === 'fim') delete ui.progresso[d.id];
   else ui.progresso[d.id] = { ...(ui.progresso[d.id] || {}), ...d };
+  atualizarContador();
+  progressoNaAbaDownloads(d);
   renderLista();
   if (naGrade()) atualizarCard(d.id);
   else if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
 });
 
-tlw.aoMudar(() => { atualizarLocal(); });
+tlw.aoMudar(() => { atualizarLocal(); if (naAbaDownloads()) carregarDownloads(); });
 tlw.aoEvento('lancou', (d) => toast(`🎉 ${d.nome} chegou! Já dá pra instalar.`, 'ok'));
+
+// ───────────── aba Downloads ─────────────
+
+const dlUI = { dados: null, carregando: false, depois: false };
+const LIMITES = [0, 1, 2, 5, 10, 20, 50];
+
+const naAbaDownloads = () => document.body.classList.contains('ver-downloads');
+
+async function carregarDownloads() {
+  if (dlUI.carregando) { dlUI.depois = true; return; }
+  dlUI.carregando = true;
+  try { dlUI.dados = await tlw.chamar('downloads'); } catch { /* tenta de novo no próximo evento */ }
+  dlUI.carregando = false;
+  if (naAbaDownloads()) renderDownloads();
+  if (dlUI.depois) { dlUI.depois = false; carregarDownloads(); }
+}
+
+function atualizarContador() {
+  const n = Object.values(ui.progresso).filter((p) => p && p.fase && p.fase !== 'pausado').length;
+  const el = $('#dl-contador');
+  if (el) el.textContent = n ? String(n) : '';
+}
+
+function capaDl(item) {
+  return arte({ id: item.id, nome: item.nome, capa: item.capa }, 'dl-capa');
+}
+
+function linhaDl(item, tipo, i, total) {
+  const p = item;
+  const btn = (acao, ic, titulo, extra = '') => `<button type="button" class="icone ${extra}" data-dl="${acao}" data-id="${esc(item.id)}" title="${titulo}">${icone(ic)}</button>`;
+  const versao = item.versao ? `<small>${item.atualizando ? 'atualização' : 'versão'} ${esc(item.versao)}</small>` : '';
+  const auto = item.auto ? '<span class="tag-auto">automático</span>' : '';
+  if (tipo === 'ativo') {
+    const inst = p.fase === 'instalando';
+    return `<div class="dl-item grande" data-dl-item="${esc(item.id)}">
+      ${capaDl(item)}
+      <div class="dl-info">
+        <div class="dl-nome">${esc(item.nome)}${versao}${auto}</div>
+        <div class="trilho"><div class="enchimento ${inst ? 'indet' : ''}" style="width:${inst ? 100 : pct(p)}%"></div></div>
+        <div class="dl-txt ${p.fase === 'reconectando' ? 'erro' : ''}" data-dl-txt>${esc(textoProgresso(p))}</div>
+      </div>
+      <div class="dl-acoes">${inst ? '' : btn('pausar', 'pausa', 'Pausar') + btn('cancelar', 'fechar', 'Cancelar e apagar o que já baixou')}</div>
+    </div>`;
+  }
+  if (tipo === 'fila') {
+    return `<div class="dl-item" data-dl-item="${esc(item.id)}">
+      ${capaDl(item)}
+      <div class="dl-info"><div class="dl-nome">${esc(item.nome)}${versao}${auto}</div>
+        <div class="dl-txt">${esc(p.erro || `${i + 1}º na fila`)}${p.baixado ? ` · ${fmtBytes(p.baixado)} já baixados` : ''}</div></div>
+      <div class="dl-acoes">
+        <button type="button" class="btn-peq" data-dl="agora" data-id="${esc(item.id)}" title="Passa na frente de quem está baixando">${icone('primeiro')}</button>
+        ${btn('cima', 'seta', 'Subir na fila', i === 0 ? '" disabled data-x="' : '')}
+        ${btn('baixo', 'seta', 'Descer na fila', `seta-baixo${i === total - 1 ? '" disabled data-x="' : ''}`)}
+        ${btn('pausar', 'pausa', 'Pausar')}${btn('cancelar', 'fechar', 'Tirar da fila')}
+      </div></div>`;
+  }
+  // pausado
+  return `<div class="dl-item" data-dl-item="${esc(item.id)}">
+    ${capaDl(item)}
+    <div class="dl-info"><div class="dl-nome">${esc(item.nome)}${versao}</div>
+      ${p.total ? `<div class="trilho"><div class="enchimento pausado" style="width:${pct(p)}%"></div></div>` : ''}
+      <div class="dl-txt ${p.erro ? 'erro' : ''}">${esc(textoProgresso(p))}</div></div>
+    <div class="dl-acoes">
+      <button type="button" class="btn-peq destaque" data-dl="continuar" data-id="${esc(item.id)}">Continuar</button>
+      ${btn('cancelar', 'fechar', 'Cancelar e apagar o que já baixou')}
+    </div></div>`;
+}
+
+function renderDownloads() {
+  const el = $('#downloads');
+  if (!el) return;
+  const d = dlUI.dados;
+  if (!d) { el.innerHTML = '<div class="carregando"><div class="spinner"></div>Carregando…</div>'; return; }
+  const ativo = d.itens.find((x) => x.fase !== 'fila' && x.fase !== 'pausado');
+  const fila = d.itens.filter((x) => x.fase === 'fila');
+  const pausados = d.itens.filter((x) => x.fase === 'pausado');
+  const resumo = ativo
+    ? `Baixando ${esc(ativo.nome)}${fila.length ? ` · mais ${fila.length} na fila` : ''}`
+    : fila.length ? `${fila.length} na fila${d.jogando && fila.some((x) => x.erro) ? ' · esperando você fechar o jogo' : ''}` : 'Nada baixando agora.';
+  const livre = d.espacoLivre == null ? '' : ` · ${fmtBytes(d.espacoLivre)} livres no disco ${esc(d.disco || '')}`;
+  const opcoesLimite = LIMITES.map((v) => `<option value="${v}" ${Number(d.limiteMBs) === v ? 'selected' : ''}>${v ? `Até ${v} MB/s` : 'Sem limite'}</option>`).join('')
+    + (LIMITES.includes(Number(d.limiteMBs)) ? '' : `<option value="${d.limiteMBs}" selected>Até ${d.limiteMBs} MB/s</option>`);
+  const concl = d.concluidos.length ? `<div class="dl-secao"><h3>Concluídos</h3>${d.concluidos.map((c) => `<div class="dl-item">
+      ${capaDl(c)}
+      <div class="dl-info"><div class="dl-nome">${esc(c.nome)}<small>versão ${esc(c.versao)}</small>${c.auto ? '<span class="tag-auto">automático</span>' : ''}</div>
+        <div class="dl-txt">${c.atualizou ? 'Atualizado' : 'Instalado'} às ${new Date(c.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div></div>
+      <div class="dl-acoes">${c.instalado ? `<button type="button" class="btn-peq" data-dl="jogar" data-id="${esc(c.id)}">${icone('play')} Jogar</button>` : ''}</div>
+    </div>`).join('')}</div>` : '';
+
+  el.innerHTML = `<div class="config-miolo dl-miolo">
+    <div class="dl-topo">
+      <div><h2>Downloads</h2><p class="sub">${resumo}${livre}</p></div>
+      <div class="dl-opcoes">
+        <label>Velocidade <select data-dl-limite>${opcoesLimite}</select></label>
+      </div>
+    </div>
+    ${ativo ? `<div class="dl-secao"><h3>Baixando agora</h3>${linhaDl(ativo, 'ativo')}</div>` : ''}
+    ${fila.length ? `<div class="dl-secao"><h3>Na fila (${fila.length})</h3>${fila.map((x, i) => linhaDl(x, 'fila', i, fila.length)).join('')}</div>` : ''}
+    ${pausados.length ? `<div class="dl-secao"><h3>Pausados (${pausados.length})</h3>${pausados.map((x) => linhaDl(x, 'pausado')).join('')}</div>` : ''}
+    ${!d.itens.length && !d.concluidos.length ? '<div class="dl-vazio">Nenhum download. Os jogos que você instalar ou atualizar aparecem aqui.</div>' : ''}
+    ${concl}
+  </div>`;
+}
+
+// Atualiza só a barra de quem está baixando (sem redesenhar a página toda a cada 1/4 de segundo).
+function progressoNaAbaDownloads(dd) {
+  if (!naAbaDownloads() || !dlUI.dados) return;
+  const item = dlUI.dados.itens.find((x) => x.id === dd.id);
+  const linha = document.querySelector(`.dl-item.grande[data-dl-item="${CSS.escape(dd.id)}"]`);
+  if (item && linha && item.fase === dd.fase && dd.fase !== 'fim') {
+    Object.assign(item, dd);
+    linha.querySelector('.enchimento').style.width = `${dd.fase === 'instalando' ? 100 : pct(dd)}%`;
+    linha.querySelector('[data-dl-txt]').textContent = textoProgresso(dd);
+    return;
+  }
+  carregarDownloads();
+}
+
+$('#downloads').addEventListener('click', async (e) => {
+  const b = e.target.closest('[data-dl]');
+  if (!b || b.disabled) return;
+  const id = b.dataset.id;
+  const acao = b.dataset.dl;
+  try {
+    if (acao === 'pausar') await tlw.pausar(id);
+    else if (acao === 'cancelar') await tlw.cancelar(id);
+    else if (acao === 'continuar') { const j = ui.jogos.find((x) => x.id === id); if (j) baixarJogo(j).catch((err) => toast(limparErro(err), 'erro')); }
+    else if (acao === 'jogar') await tlw.jogar(id);
+    else await tlw.chamar('fila-mover', { id, para: acao });
+  } catch (err) { toast(limparErro(err), 'erro'); }
+  carregarDownloads();
+});
+
+$('#downloads').addEventListener('change', async (e) => {
+  if (!e.target.matches('[data-dl-limite]')) return;
+  try {
+    cfgUI.dados = await tlw.chamar('config-salvar', { mudancas: { limiteMBs: Number(e.target.value) } });
+    toast(Number(e.target.value) ? `Downloads limitados a ${e.target.value} MB/s.` : 'Downloads sem limite de velocidade.', 'ok');
+  } catch (err) { toast(limparErro(err), 'erro'); }
+  carregarDownloads();
+});
 
 // ───────────── aba Configurações ─────────────
 
-const FUNCIONA_SEM_EXE = new Set(['discord']);
+const FUNCIONA_SEM_EXE = new Set(['discord', 'pausarAoJogar']);
 const cfgUI = { dados: null, procurando: false, nova: null, movendo: false, msgVersao: '' };
 
 const OPCOES = [
@@ -1369,8 +1624,11 @@ const OPCOES = [
   ['Discord', [
     ['discord', 'Mostrar no Discord o jogo que você está jogando', 'Aparece "Jogando..." no seu perfil enquanto o jogo estiver aberto. Precisa do Discord aberto no PC.'],
   ]],
+  ['Downloads', [
+    ['pausarAoJogar', 'Esperar o jogo fechar pra baixar', 'Enquanto você joga, os downloads ficam esperando, pra não dar lag. Continuam sozinhos quando o jogo fecha.'],
+  ]],
   ['Jogos', [
-    ['atualizarAuto', 'Atualizar os jogos automaticamente', 'Baixa as atualizações sozinho, sem você precisar clicar (menos de jogos que estiverem abertos).'],
+    ['atualizarAuto', 'Atualizar os jogos automaticamente', 'Baixa as atualizações sozinho, sem você precisar clicar. Sempre espera o jogo fechar.'],
     ['minimizarAoJogar', 'Minimizar o launcher ao abrir um jogo', 'Tira o launcher da frente quando o jogo abre.'],
   ]],
 ];
@@ -1399,7 +1657,11 @@ function renderConfig() {
           <button type="button" class="btn-peq" data-cfg="pasta-mudar" ${cfgUI.movendo ? 'disabled' : ''}>${cfgUI.movendo ? 'Movendo jogos…' : 'Alterar…'}</button>
           ${d.pastaAtual !== d.pastaPadrao ? `<button type="button" class="btn-peq" data-cfg="pasta-padrao" ${cfgUI.movendo ? 'disabled' : ''}>Voltar pro padrão</button>` : ''}
         </div></div>`;
-    return `<div class="grupo"><h3>${titulo}</h3>${linhas}${pasta}</div>`;
+    const limite = titulo !== 'Downloads' ? '' : `
+      <div class="opcao"><div class="opcao-txt"><div class="opcao-titulo">Limite de velocidade</div>
+        <div class="opcao-desc">Pra não travar a internet da casa (ou a sua live) enquanto baixa.</div></div>
+        <select class="cfg-select" data-opcao-num="limiteMBs">${LIMITES.map((v) => `<option value="${v}" ${Number(c.limiteMBs) === v ? 'selected' : ''}>${v ? `Até ${v} MB/s` : 'Sem limite'}</option>`).join('')}</select></div>`;
+    return `<div class="grupo"><h3>${titulo}</h3>${linhas}${limite}${pasta}</div>`;
   }).join('');
 
   let sobreBotao;
@@ -1416,14 +1678,19 @@ function renderConfig() {
         <div class="opcao-desc">${d.versaoApp ? esc(d.versaoApp) : 'versão de teste'}${cfgUI.msgVersao ? ` · ${esc(cfgUI.msgVersao)}` : ''}</div>
         <div class="opcao-desc">O launcher procura atualizações sozinho toda vez que abre.</div></div>
         <div class="botoes">${sobreBotao}</div></div>
+      <div class="opcao"><div class="opcao-txt"><div class="opcao-titulo">Relatório de problema</div>
+        <div class="opcao-desc">Deu algum erro? Gera um arquivo na área de trabalho com as informações do launcher pra você mandar pra TLW. Não tem senha nem nada pessoal.</div></div>
+        <div class="botoes"><button type="button" class="btn-peq" data-cfg="relatorio">Gerar relatório</button></div></div>
     </div>
   </div>`;
 }
 
 async function abrirAba(aba) {
-  if (aba === 'biblioteca' && !document.body.classList.contains('ver-config') && ui.modo === 'grade' && ui.gradeAberta) voltarPraGrade();
+  if (aba === 'biblioteca' && !foraDaBiblioteca() && ui.modo === 'grade' && ui.gradeAberta) voltarPraGrade();
   fecharMenus();
   document.body.classList.toggle('ver-config', aba === 'config');
+  document.body.classList.toggle('ver-downloads', aba === 'downloads');
+  if (aba === 'downloads') { renderDownloads(); carregarDownloads(); }
   document.querySelectorAll('.abas .aba').forEach((b) => b.classList.toggle('ativa', b.dataset.aba === aba));
   if (aba === 'config') {
     renderConfig();
@@ -1438,10 +1705,11 @@ document.querySelector('.abas').addEventListener('click', (e) => {
 });
 
 $('#config').addEventListener('change', async (e) => {
-  const k = e.target.dataset.opcao;
+  const num = e.target.dataset.opcaoNum;
+  const k = e.target.dataset.opcao || num;
   if (!k) return;
   try {
-    cfgUI.dados = await tlw.chamar('config-salvar', { mudancas: { [k]: e.target.checked } });
+    cfgUI.dados = await tlw.chamar('config-salvar', { mudancas: { [k]: num ? Number(e.target.value) : e.target.checked } });
     toast('Configuração salva.', 'ok');
   } catch (err) { toast(limparErro(err), 'erro'); }
   renderConfig();
@@ -1473,6 +1741,10 @@ $('#config').addEventListener('click', async (e) => {
       cfgUI.msgVersao = r.nova ? `versão ${r.nova} baixada` : (r.msg || 'você já está na versão mais nova');
     }
     if (acao === 'reiniciar') return void await tlw.chamar('app-reiniciar');
+    if (acao === 'relatorio') {
+      const r = await tlw.chamar('relatorio');
+      toast(`Relatório salvo: ${r.arquivo.split(/[\\/]/).pop()}. Mande esse arquivo pra TLW.`, 'ok');
+    }
   } catch (err) {
     toast(limparErro(err), 'erro');
   } finally {
