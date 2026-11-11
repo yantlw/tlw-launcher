@@ -653,7 +653,7 @@ async function restaurarPausados() {
   avisarMudanca();
 }
 
-// ───────────── contador de downloads e histórico (releases do GitHub) ─────────────
+// ───────────── contador de downloads (releases do GitHub) ─────────────
 
 function repoDoJogo(j) {
   const link = [].concat(j.download || []).find((u) => /github\.com\/[^/]+\/[^/]+\/releases\//.test(u || ''));
@@ -679,9 +679,6 @@ async function extrasDoJogo(id) {
     const releases = (await r.json()).filter((x) => !x.draft);
     const dados = {
       downloads: releases.reduce((n, x) => n + (x.assets || []).reduce((m, a) => m + (a.download_count || 0), 0), 0),
-      historico: releases
-        .map((x) => ({ versao: String(x.tag_name || '').replace(/^v/i, ''), titulo: x.name || '', data: x.published_at || x.created_at, notas: String(x.body || '').trim() }))
-        .sort((a, b) => Date.parse(b.data) - Date.parse(a.data)),
     };
     cache[repo] = { em: Date.now(), dados };
     salvarJSON(ARQ_GH_CACHE, cache);
