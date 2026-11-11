@@ -12,6 +12,7 @@ const fsp = fs.promises;
 const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
+const net = require('net');
 const { spawn, execFile } = require('child_process');
 
 function lerJSONSimples(arquivo) {
@@ -51,6 +52,7 @@ const CONFIG_PADRAO = {
   avisarAtualizacoes: true,
   atualizarAuto: false,
   minimizarAoJogar: true,
+  discord: true,
   pastaJogos: '',
 };
 const lerConfig = () => ({ ...CONFIG_PADRAO, ...lerJSONSimples(ARQ_CONFIG) });
@@ -204,6 +206,7 @@ function combinar(j, inst) {
       tempoJogado: inst.tempoJogado || 0,
       tamanho: inst.tamanho || 0,
       ultimaVez: inst.ultimaVez || null,
+      atalho: !!(inst.atalho && fs.existsSync(inst.atalho)),
     } : null,
     atualizacao: !!(inst && !j.removido && !j.emBreve && compararVersao(j.versao, inst.versao) > 0),
     rodando: rodando.has(j.id),
@@ -323,9 +326,12 @@ async function instalar(id) {
       instaladoEm: Date.now(),
       tempoJogado: antes.tempoJogado || 0,
       ultimaVez: antes.ultimaVez || null,
+      ...(antes.atalho ? { atalho: antes.atalho } : {}),
       info: infoBasica(jogo),
     };
     salvarEstado(est);
+    await salvarManifesto(id).catch(() => {});
+    if (antes.atalho) await refazerAtalho(id).catch(() => {});
     return { ok: true, atualizou: !!antes.versao };
   } catch (e) {
     await fsp.rm(nova, { recursive: true, force: true }).catch(() => {});
@@ -344,7 +350,7 @@ async function jogar(id) {
   const inst = lerEstado()[id];
   if (!inst) throw new Error('Esse jogo não está instalado.');
   const exe = path.join(pastaDoJogo(id), inst.executavel);
-  if (!fs.existsSync(exe)) throw new Error('O arquivo do jogo sumiu (talvez o antivírus tenha removido). Desinstale e instale de novo.');
+  if (!fs.existsSync(exe)) throw new Error('O arquivo do jogo sumiu (talvez o antivírus tenha removido). Use "Verificar e reparar arquivos" no menu ⚙ do jogo.');
 
   const inicio = Date.now();
   const filho = spawn(exe, [], { cwd: path.dirname(exe), detached: true, stdio: 'ignore' });
@@ -356,9 +362,11 @@ async function jogar(id) {
   rodando.set(id, filho);
   avisarMudanca();
   if (casca && lerConfig().minimizarAoJogar) casca.minimizar();
+  discordMostrar(catalogo.find((j) => j.id === id) || inst.info || { id, nome: id }, inicio).catch(() => {});
 
   filho.once('exit', () => {
     rodando.delete(id);
+    if (!rodando.size) discordLimpar();
     const est = lerEstado();
     if (est[id]) {
       est[id].tempoJogado = (est[id].tempoJogado || 0) + (Date.now() - inicio);
@@ -376,6 +384,8 @@ async function desinstalar(id) {
   const est = lerEstado();
   if (!est[id]) return { ok: false };
   await fsp.rm(pastaDoJogo(id), { recursive: true, force: true });
+  if (est[id].atalho) await fsp.rm(est[id].atalho, { force: true }).catch(() => {});
+  await fsp.rm(arqManifesto(id), { force: true }).catch(() => {});
   delete est[id];
   salvarEstado(est);
   avisarMudanca();
@@ -508,6 +518,199 @@ function servirArquivo(res, caminho) {
   return true;
 }
 
+// ───────────── atalho na área de trabalho ─────────────
+
+function rodarPowerShell(script, env) {
+  return new Promise((res, rej) => {
+    execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { windowsHide: true, env: { ...process.env, ...env } }, (err, saida) => (err ? rej(err) : res(String(saida).trim())));
+  });
+}
+
+async function pastaDesktop() {
+  if (casca && casca.pastaDesktop) return casca.pastaDesktop();
+  try { return await rodarPowerShell("[Environment]::GetFolderPath('Desktop')"); } catch { return path.join(os.homedir(), 'Desktop'); }
+}
+
+async function gravarAtalho(lnk, alvo, descricao) {
+  if (casca && casca.criarAtalho) {
+    if (!casca.criarAtalho(lnk, { target: alvo, cwd: path.dirname(alvo), icon: alvo, iconIndex: 0, description: descricao })) {
+      throw new Error('falhou');
+    }
+    return;
+  }
+  await rodarPowerShell(
+    '$s=(New-Object -ComObject WScript.Shell).CreateShortcut($env:TLW_LNK);$s.TargetPath=$env:TLW_ALVO;'
+    + '$s.WorkingDirectory=$env:TLW_PASTA;$s.IconLocation=$env:TLW_ALVO+",0";$s.Description=$env:TLW_DESC;$s.Save()',
+    { TLW_LNK: lnk, TLW_ALVO: alvo, TLW_PASTA: path.dirname(alvo), TLW_DESC: descricao },
+  );
+}
+
+async function criarAtalho(id) {
+  if (process.platform !== 'win32') throw new Error('Atalhos na área de trabalho só funcionam no Windows.');
+  const est = lerEstado();
+  const inst = est[id];
+  if (!inst) throw new Error('Esse jogo não está instalado.');
+  const alvo = path.join(pastaDoJogo(id), inst.executavel);
+  if (!fs.existsSync(alvo)) throw new Error('O arquivo do jogo sumiu. Use "Verificar e reparar arquivos" primeiro.');
+  const nome = String((inst.info && inst.info.nome) || id).replace(/[\\/:*?"<>|]/g, '').trim() || id;
+  const lnk = path.join(await pastaDesktop(), `${nome}.lnk`);
+  try {
+    await gravarAtalho(lnk, alvo, `${nome} (TLW Games)`);
+  } catch {
+    throw new Error('Não consegui criar o atalho na área de trabalho.');
+  }
+  est[id].atalho = lnk;
+  salvarEstado(est);
+  avisarMudanca();
+  return { atalho: lnk };
+}
+
+// Depois de atualizar ou mudar a pasta, o atalho é refeito pra continuar funcionando.
+async function refazerAtalho(id) {
+  const inst = lerEstado()[id];
+  if (!inst || !inst.atalho || !fs.existsSync(inst.atalho)) return;
+  await criarAtalho(id);
+}
+
+// ───────────── verificar e reparar arquivos ─────────────
+// Na instalação, o launcher guarda a lista de arquivos do jogo e o tamanho de cada um.
+// "Verificar" compara essa lista com o que está no disco.
+
+const arqManifesto = (id) => path.join(PASTA_DADOS, 'arquivos', `${nomePasta(id)}.json`);
+
+async function listarArquivos(pasta, base = '', saida = {}) {
+  for (const item of await fsp.readdir(path.join(pasta, base), { withFileTypes: true })) {
+    const rel = path.join(base, item.name);
+    if (item.isDirectory()) await listarArquivos(pasta, rel, saida);
+    else if (item.isFile()) saida[rel.split(path.sep).join('/')] = (await fsp.stat(path.join(pasta, rel))).size;
+  }
+  return saida;
+}
+
+async function salvarManifesto(id) {
+  salvarJSON(arqManifesto(id), await listarArquivos(pastaDoJogo(id)));
+}
+
+async function verificar(id) {
+  if (rodando.has(id)) throw new Error('Feche o jogo antes de verificar os arquivos.');
+  if (downloads.has(id)) throw new Error('Espere o download terminar.');
+  const inst = lerEstado()[id];
+  if (!inst) throw new Error('Esse jogo não está instalado.');
+  const pasta = pastaDoJogo(id);
+  const exeOk = fs.existsSync(path.join(pasta, inst.executavel));
+  const lista = lerJSON(arqManifesto(id), null);
+  if (!lista) return { semLista: true, ok: exeOk, problemas: exeOk ? 0 : 1, total: 1 };
+  let problemas = 0;
+  for (const [rel, tamanho] of Object.entries(lista)) {
+    try {
+      if ((await fsp.stat(path.join(pasta, ...rel.split('/')))).size !== tamanho) problemas++;
+    } catch { problemas++; }
+  }
+  return { ok: problemas === 0, problemas, total: Object.keys(lista).length };
+}
+
+// ───────────── Discord ("Jogando ...") ─────────────
+// Conversa com o Discord aberto no PC (pela conexão local dele). Não usa servidor.
+// Precisa de um "ID do aplicativo" do Discord, que você coloca no Admin (aba Visual,
+// ou um por jogo em Avançado). O nome desse aplicativo é o que aparece em "Jogando ...".
+
+const discordEstado = { sock: null, id: null };
+
+function caminhoDiscord(i) {
+  if (process.platform === 'win32') return `\\\\?\\pipe\\discord-ipc-${i}`;
+  const base = process.env.XDG_RUNTIME_DIR || process.env.TMPDIR || process.env.TMP || '/tmp';
+  return path.join(base, `discord-ipc-${i}`);
+}
+
+function quadroDiscord(op, dados) {
+  const json = Buffer.from(JSON.stringify(dados), 'utf8');
+  const cab = Buffer.alloc(8);
+  cab.writeInt32LE(op, 0);
+  cab.writeInt32LE(json.length, 4);
+  return Buffer.concat([cab, json]);
+}
+
+function tentarDiscord(i, clientId) {
+  return new Promise((resolver) => {
+    const sock = net.createConnection(caminhoDiscord(i));
+    let buf = Buffer.alloc(0);
+    let pronto = false;
+    const fim = (ok) => {
+      if (pronto) return;
+      pronto = true;
+      clearTimeout(tempo);
+      if (!ok) sock.destroy();
+      resolver(ok ? sock : null);
+    };
+    const tempo = setTimeout(() => fim(false), 3000);
+    sock.on('error', () => fim(false));
+    sock.on('close', () => { if (discordEstado.sock === sock) discordEstado.sock = null; fim(false); });
+    sock.on('connect', () => sock.write(quadroDiscord(0, { v: 1, client_id: clientId })));
+    sock.on('data', (pedaco) => {
+      buf = Buffer.concat([buf, pedaco]);
+      while (buf.length >= 8) {
+        const op = buf.readInt32LE(0);
+        const tam = buf.readInt32LE(4);
+        if (buf.length < 8 + tam) break;
+        let msg = {};
+        try { msg = JSON.parse(buf.subarray(8, 8 + tam).toString('utf8')); } catch { /* ignora */ }
+        buf = buf.subarray(8 + tam);
+        if (op === 3) sock.write(quadroDiscord(4, msg)); // ping -> pong
+        else if (op === 2) fim(false);                    // Discord recusou (ID errado?)
+        else if (msg.evt === 'READY') fim(true);
+      }
+    });
+  });
+}
+
+async function conectarDiscord(clientId) {
+  if (discordEstado.sock && discordEstado.id === clientId && !discordEstado.sock.destroyed) return discordEstado.sock;
+  discordFechar();
+  for (let i = 0; i < 10; i++) {
+    const sock = await tentarDiscord(i, clientId);
+    if (sock) {
+      discordEstado.sock = sock;
+      discordEstado.id = clientId;
+      return sock;
+    }
+  }
+  return null; // Discord fechado
+}
+
+function discordFechar() {
+  if (discordEstado.sock) discordEstado.sock.destroy();
+  discordEstado.sock = null;
+  discordEstado.id = null;
+}
+
+async function discordMostrar(jogo, inicio) {
+  if (!lerConfig().discord) return;
+  const doJogo = String(jogo.discord || '').trim();
+  const id = doJogo || String(visual.discord || '').trim();
+  if (!/^\d{15,22}$/.test(id)) return;
+  const sock = await conectarDiscord(id);
+  if (!sock) return;
+  const capa = /^https:\/\//i.test(jogo.capa || '') ? jogo.capa : '';
+  const atividade = {
+    // Com aplicativo próprio do jogo, o nome do jogo já aparece no "Jogando".
+    details: doJogo ? (jogo.genero || undefined) : jogo.nome,
+    state: 'pelo TLW Games Launcher',
+    timestamps: { start: inicio },
+    ...(capa ? { assets: { large_image: capa, large_text: jogo.nome } } : {}),
+  };
+  const link = String(visual.discordLink || '').trim();
+  if (/^https:\/\//i.test(link)) atividade.buttons = [{ label: 'Baixar o TLW Games Launcher', url: link }];
+  sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid, activity: atividade }, nonce: crypto.randomUUID() }));
+}
+
+function discordLimpar() {
+  const sock = discordEstado.sock;
+  if (!sock || sock.destroyed) return;
+  sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid }, nonce: crypto.randomUUID() }));
+  setTimeout(discordFechar, 500);
+}
+
 // ───────────── configurações ─────────────
 
 function verConfig() {
@@ -526,6 +729,7 @@ function salvarConfig(mudancas) {
     if (k !== 'pastaJogos' && k in mudancas) atual[k] = !!mudancas[k];
   }
   salvarJSON(ARQ_CONFIG, atual);
+  if (!atual.discord) discordLimpar();
   if (casca) casca.aplicarConfig(atual);
   return verConfig();
 }
@@ -587,6 +791,9 @@ async function mudarPasta({ pasta, escolher }) {
   const cfg = lerConfig();
   cfg.pastaJogos = pasta.toLowerCase() === path.resolve(PASTA_PADRAO).toLowerCase() ? '' : pasta;
   salvarJSON(ARQ_CONFIG, cfg);
+  for (const [id, inst] of Object.entries(lerEstado())) {
+    if (inst.atalho) await refazerAtalho(id).catch(() => {});
+  }
   enviar('pasta', { fase: 'fim' });
   avisarMudanca();
   return verConfig();
@@ -642,6 +849,8 @@ const ACOES = {
     return casca.procurarAtualizacao();
   },
   'app-reiniciar': async () => { if (casca) casca.reiniciar(); return {}; },
+  atalho: ({ id }) => criarAtalho(id),
+  verificar: ({ id }) => verificar(id),
 };
 
 function responder(res, status, tipo, corpo) {
