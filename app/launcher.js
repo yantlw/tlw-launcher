@@ -927,3 +927,161 @@ setInterval(() => {
   }
 }, 3000);
 ultimoCliente = Date.now() + 20000; // dá um tempo pra janela abrir na primeira vez
+
+// ═════════════════════════════════════════════════════════════
+//  ATUALIZAÇÃO DO PRÓPRIO .EXE
+//  Quando você publica um .exe novo pelo Admin (aba Launcher), ele fica
+//  no campo "exe" do app/versao.json. Ao abrir, o launcher compara com o
+//  .exe que está rodando; se for diferente, baixa (com a janelinha de
+//  progresso), troca o arquivo e reabre sozinho.
+//  Só funciona no .exe portátil (o do MONTAR-EXE.bat).
+// ═════════════════════════════════════════════════════════════
+
+const ARQ_HASH_EXE = path.join(PASTA_DADOS, 'exe-hash.json');
+const exeAtual = () => process.env.PORTABLE_EXECUTABLE_FILE || '';
+const podeAtualizarExe = () => !!(casca && exeAtual() && (process.platform === 'win32' || process.env.TLW_TESTE_EXE));
+const exeAntigo = (exe) => `${exe.replace(/\.exe$/i, '')}.antigo.exe`;
+
+function hashArquivo(arquivo) {
+  return new Promise((res, rej) => {
+    const h = crypto.createHash('sha256');
+    fs.createReadStream(arquivo).on('data', (c) => h.update(c)).on('error', rej).on('end', () => res(h.digest('hex')));
+  });
+}
+
+// O hash do .exe fica guardado (só recalcula se o arquivo mudar), pra não atrasar a abertura.
+async function hashDoExe(exe) {
+  const st = fs.statSync(exe);
+  const cache = lerJSON(ARQ_HASH_EXE, {});
+  if (cache.caminho === exe && cache.tamanho === st.size && cache.mtime === st.mtimeMs && cache.sha256) return cache.sha256;
+  const sha256 = await hashArquivo(exe);
+  salvarJSON(ARQ_HASH_EXE, { caminho: exe, tamanho: st.size, mtime: st.mtimeMs, sha256 });
+  return sha256;
+}
+
+function limparExeAntigo() {
+  const antigo = exeAntigo(exeAtual());
+  const tentar = (n) => {
+    try { if (fs.existsSync(antigo)) fs.rmSync(antigo, { force: true }); } catch {
+      if (n > 0) setTimeout(() => tentar(n - 1), 5000); // o .exe antigo ainda pode estar fechando
+    }
+  };
+  tentar(6);
+}
+
+async function infoExePublicado() {
+  const r = await fetch(`${GH_API}/repos/${REPO}/contents/app/versao.json`, {
+    headers: { Accept: 'application/vnd.github.raw', 'User-Agent': 'TLW-Games-Launcher' },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!r.ok) return null;
+  const exe = (await r.json()).exe;
+  return exe && /^https?:\/\//.test(exe.url || '') && /^[a-f0-9]{64}$/.test(exe.sha256 || '') ? exe : null;
+}
+
+function reabrir(exe) {
+  const args = process.argv.includes('--oculto') ? ['--oculto'] : [];
+  if (process.platform === 'win32') {
+    // Espera uns 2 segundos (o launcher atual fechar) e abre o .exe novo.
+    const cmd = `ping -n 3 127.0.0.1 >nul & start "" "${exe}"${args.length ? ' --oculto' : ''}`;
+    spawn('cmd.exe', ['/d', '/s', '/c', `"${cmd}"`], { detached: true, stdio: 'ignore', windowsHide: true, windowsVerbatimArguments: true }).unref();
+  } else {
+    spawn(exe, args, { detached: true, stdio: 'ignore' }).unref();
+  }
+  try { servidor.close(); } catch { /* ok */ }
+  setTimeout(() => {
+    try { require('electron').app.exit(0); } catch { process.exit(0); }
+  }, 300);
+}
+
+// Devolve true se achou .exe novo (o launcher vai reabrir sozinho).
+// mostrar(texto, fração de 0 a 1 ou null) atualiza a janelinha.
+async function atualizarExe(mostrar) {
+  if (!podeAtualizarExe()) return false;
+  const exe = exeAtual();
+  limparExeAntigo();
+  let info;
+  try { info = await infoExePublicado(); } catch { return false; }
+  if (!info) return false;
+  try { if ((await hashDoExe(exe)) === info.sha256) return false; } catch { return false; }
+
+  const avisar = mostrar || (() => {});
+  const novo = `${exe}.novo`;
+  try {
+    avisar('Baixando launcher novo…', 0);
+    await baixarUm(info.url, novo, new AbortController().signal, (baixado, total, vel) => {
+      const mb = (n) => (n / 1048576).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+      avisar(`Baixando launcher novo… ${mb(baixado)} de ${mb(total || info.tamanho || baixado)} MB`, total ? baixado / total : null);
+    });
+    if ((await hashArquivo(novo)) !== info.sha256) throw new Error('arquivo diferente do publicado');
+    avisar('Instalando a nova versão…', 1);
+    const antigo = exeAntigo(exe);
+    try { fs.rmSync(antigo, { force: true }); } catch { /* ok */ }
+    fs.renameSync(exe, antigo);
+    try { fs.renameSync(novo, exe); } catch (e) { fs.renameSync(antigo, exe); throw e; }
+    if (process.platform !== 'win32') { try { fs.chmodSync(exe, 0o755); } catch { /* ok */ } }
+    const st = fs.statSync(exe);
+    salvarJSON(ARQ_HASH_EXE, { caminho: exe, tamanho: st.size, mtime: st.mtimeMs, sha256: info.sha256 });
+  } catch {
+    try { fs.rmSync(novo, { force: true }); } catch { /* ok */ }
+    return false; // sem internet, sem permissão na pasta etc.: segue com o .exe atual
+  }
+  avisar('Reabrindo o launcher…', 1);
+  reabrir(exe);
+  return true;
+}
+
+// Janelinha própria, usada só quando o launcher roda dentro de um .exe antigo
+// (que ainda não tinha a janelinha de atualização).
+function janelinhaPropria() {
+  const { BrowserWindow } = require('electron');
+  let ico = '';
+  for (const p of [process.env.TLW_PASTA_EMBUTIDA, __dirname].filter(Boolean)) {
+    try { ico = `data:image/png;base64,${fs.readFileSync(path.join(p, 'icone.png')).toString('base64')}`; break; } catch { /* tenta a próxima */ }
+  }
+  const html = `<!doctype html><html><head><meta charset="utf-8"><style>
+  *{box-sizing:border-box;margin:0}html,body{height:100%;overflow:hidden;user-select:none;-webkit-app-region:drag}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:26px 30px;font:13px "Segoe UI",system-ui,sans-serif;color:#e9ebf1;
+  border:1px solid #2a2f3d;background:radial-gradient(circle at 50% 0%,rgba(166,0,255,.22),transparent 60%),#0b0d12}
+  img{width:74px;height:74px;object-fit:contain;filter:drop-shadow(0 6px 18px rgba(140,0,255,.45))}
+  h1{font:900 15px "Segoe UI Black","Arial Black",sans-serif;letter-spacing:.14em;text-transform:uppercase}
+  .txt{width:100%;display:flex;justify-content:space-between;gap:10px;color:#8a93a8;font-size:12px}#t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trilho{width:100%;height:7px;border-radius:99px;background:#1e2330;overflow:hidden}
+  #b{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#4400ff,#a600ff);transition:width .2s}
+  #b.indet{width:40%!important;animation:vai 1.1s ease-in-out infinite}@keyframes vai{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+  </style></head><body>${ico ? `<img src="${ico}">` : ''}<h1>TLW Games Launcher</h1>
+  <div class="trilho"><div id="b" class="indet"></div></div><div class="txt"><span id="t">Atualizando o launcher…</span><span id="p"></span></div>
+  <script>window.mostrar=(t,f)=>{document.getElementById('t').textContent=t;const b=document.getElementById('b');
+  if(f==null){b.classList.add('indet');document.getElementById('p').textContent='';}
+  else{b.classList.remove('indet');b.style.width=Math.round(f*100)+'%';document.getElementById('p').textContent=Math.round(f*100)+'%';}};</script></body></html>`;
+  const w = new BrowserWindow({
+    width: 380, height: 250, frame: false, resizable: false, maximizable: false, fullscreenable: false,
+    backgroundColor: '#0b0d12', center: true, alwaysOnTop: true, show: true, title: 'TLW Games Launcher',
+  });
+  w.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  let ultimo = null;
+  w.webContents.on('did-finish-load', () => { if (ultimo) w.webContents.executeJavaScript(ultimo).catch(() => {}); });
+  return (texto, fracao) => {
+    if (w.isDestroyed()) return;
+    ultimo = `window.mostrar && window.mostrar(${JSON.stringify(texto)}, ${fracao == null ? 'null' : Number(fracao)})`;
+    w.webContents.executeJavaScript(ultimo).catch(() => {});
+  };
+}
+
+if (casca && casca.temGanchos) {
+  // .exe novo: a casca chama isto antes de abrir a tela, usando a janelinha dela.
+  global.tlwAntesDeAbrir = (mostrar) => atualizarExe(mostrar);
+} else if (podeAtualizarExe()) {
+  // .exe antigo: confere sozinho e, se tiver .exe novo, esconde a tela e mostra a nossa janelinha.
+  (async () => {
+    let janelinha = null;
+    const oculto = process.argv.includes('--oculto');
+    await atualizarExe((texto, fracao) => {
+      if (!janelinha && !oculto) {
+        try { require('electron').BrowserWindow.getAllWindows().forEach((w) => w.hide()); } catch { /* ok */ }
+        janelinha = janelinhaPropria();
+      }
+      if (janelinha) janelinha(texto, fracao);
+    });
+  })().catch(() => {});
+}
