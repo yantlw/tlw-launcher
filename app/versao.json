@@ -1,10 +1,10 @@
 {
-  "versao": 202611111408,
+  "versao": 202611111706,
   "arquivos": [
     "index.html",
     "launcher.js"
   ],
-  "publicadoEm": "2026-11-11T14:08:03.461Z",
+  "publicadoEm": "2026-11-11T17:06:07.791Z",
   "instalador": {
     "url": "https://github.com/yantlw/tlw-launcher/releases/download/launcher-20261111140735/TLW-Games-Launcher-Setup-202611111402.exe",
     "sha256": "bfccca617dc3328c891f776b322ed398c97172906b5df334de1fdc0ac67fcb89",
