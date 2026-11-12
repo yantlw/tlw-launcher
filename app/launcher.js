@@ -103,6 +103,9 @@ const downloads = new Map(); // id -> { fase, baixado, total, vel, posicao, cont
 const fila = [];             // ids esperando a vez (um download por vez)
 let ativo = null;            // id que está baixando/instalando agora
 const concluidos = [];       // downloads que terminaram nesta sessão (pra aba Downloads)
+function tirarDosConcluidos(id) {
+  for (let i = concluidos.length - 1; i >= 0; i--) if (!id || concluidos[i].id === id) concluidos.splice(i, 1);
+}
 const rodando = new Map();   // id -> processo do jogo
 const clientes = new Set();  // janelas abertas (eventos)
 
@@ -658,6 +661,7 @@ async function processarFila() {
     const r = await executarDownload(id, d);
     downloads.delete(id);
     const jogo = catalogo.find((j) => j.id === id) || {};
+    tirarDosConcluidos(id); // cada jogo aparece uma vez só (a mais recente)
     concluidos.unshift({ id, nome: jogo.nome || id, versao: jogo.versao || '', em: Date.now(), atualizou: !!(r && r.atualizou), auto: !!d.auto });
     concluidos.splice(20);
     registrar(`download ok: ${id} v${jogo.versao}${d.auto ? ' (automático)' : ''}`);
@@ -943,6 +947,7 @@ async function desinstalar(id) {
   await fsp.rm(arqManifesto(id), { force: true }).catch(() => {});
   delete est[id];
   salvarEstado(est);
+  tirarDosConcluidos(id); // desinstalou: some de "Concluídos"
   avisarMudanca();
   return { ok: true };
 }
@@ -1613,6 +1618,7 @@ const ACOES = {
   atalho: ({ id }) => criarAtalho(id),
   downloads: () => listaDownloads(),
   'fila-mover': async ({ id, para }) => moverNaFila(id, para),
+  'concluidos-limpar': async () => { tirarDosConcluidos(); return {}; },
   'jogo-localizar': (dados) => localizarJogo(dados || {}),
   'jogo-mover': (dados) => moverJogo(dados || {}),
   relatorio: () => gerarRelatorio(),
