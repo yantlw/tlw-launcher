@@ -512,6 +512,9 @@ body.modo-grade .lateral { display: none; }
 .dl-opcoes label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--txt2); }
 .dl-opcoes select { height: 34px; padding: 0 10px; border-radius: 8px; background: var(--painel2); border: 1px solid var(--borda); color: var(--txt); font: inherit; font-size: 13px; }
 .dl-secao { margin-bottom: 22px; }
+.dl-h3-acao { display: flex; align-items: center; justify-content: space-between; }
+.dl-h3-acao .link { font-size: 12px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--txt2); }
+.dl-h3-acao .link:hover { color: var(--txt); text-decoration: underline; }
 .dl-secao h3 { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); margin: 0 0 10px 2px; }
 .dl-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); margin-bottom: 8px; }
 .dl-item .arte.dl-capa { width: 120px; height: 68px; flex: none; border-radius: 8px; }
@@ -1547,7 +1550,7 @@ function renderDownloads() {
   const livre = d.espacoLivre == null ? '' : ` · ${fmtBytes(d.espacoLivre)} livres no disco ${esc(d.disco || '')}`;
   const opcoesLimite = LIMITES.map((v) => `<option value="${v}" ${Number(d.limiteMBs) === v ? 'selected' : ''}>${v ? `Até ${v} MB/s` : 'Sem limite'}</option>`).join('')
     + (LIMITES.includes(Number(d.limiteMBs)) ? '' : `<option value="${d.limiteMBs}" selected>Até ${d.limiteMBs} MB/s</option>`);
-  const concl = d.concluidos.length ? `<div class="dl-secao"><h3>Concluídos</h3>${d.concluidos.map((c) => `<div class="dl-item">
+  const concl = d.concluidos.length ? `<div class="dl-secao"><h3 class="dl-h3-acao">Concluídos <button type="button" class="link" data-dl="limpar" data-id="">Limpar</button></h3>${d.concluidos.map((c) => `<div class="dl-item">
       ${capaDl(c)}
       <div class="dl-info"><div class="dl-nome">${esc(c.nome)}<small>versão ${esc(c.versao)}</small>${c.auto ? '<span class="tag-auto">automático</span>' : ''}</div>
         <div class="dl-txt">${c.atualizou ? 'Atualizado' : 'Instalado'} às ${new Date(c.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div></div>
@@ -1593,6 +1596,7 @@ $('#downloads').addEventListener('click', async (e) => {
     else if (acao === 'cancelar') await tlw.cancelar(id);
     else if (acao === 'continuar') { const j = ui.jogos.find((x) => x.id === id); if (j) baixarJogo(j).catch((err) => toast(limparErro(err), 'erro')); }
     else if (acao === 'jogar') await tlw.jogar(id);
+    else if (acao === 'limpar') await tlw.chamar('concluidos-limpar');
     else await tlw.chamar('fila-mover', { id, para: acao });
   } catch (err) { toast(limparErro(err), 'erro'); }
   carregarDownloads();
