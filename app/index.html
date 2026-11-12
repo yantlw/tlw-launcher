@@ -192,6 +192,9 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
     linear-gradient(135deg, hsl(var(--h) 65% 22%), hsl(calc(var(--h) + 50) 70% 8%));
 }
 .arte .ini { font-family: var(--titulo); font-weight: 900; color: rgba(255, 255, 255, .92); font-style: italic; }
+/* Enquanto a imagem não aparece, fica um fundo escuro liso (sem a arte reserva piscando). */
+.arte.tem-img { background: var(--painel2); }
+.arte.tem-img .ini { visibility: hidden; }
 
 .arte.mini { width: 44px; height: 44px; flex: none; border-radius: 8px; }
 .arte.mini .ini { font-size: 12px; letter-spacing: -.02em; }
@@ -214,6 +217,13 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 /* Com capa, o banner fica limpo (a capa já tem o logo do jogo), igual numa loja de jogos. */
 .hero:has(.arte-img) .hero-info { display: none; }
 .hero:has(.arte-img) .hero-sombra { background: linear-gradient(180deg, rgba(11, 13, 18, 0) 62%, rgba(11, 13, 18, .55)); }
+/* Banner próprio (sem o nome desenhado): mostra o logo do jogo, ou o nome escrito se não tiver logo. */
+.hero.com-banner .hero-arte .arte-img { object-position: center center; }
+.hero.com-banner:not(.com-logo) .hero-info { display: block; }
+.hero.com-banner .hero-sombra { background: linear-gradient(180deg, rgba(11, 13, 18, 0) 45%, rgba(11, 13, 18, .45) 80%, rgba(11, 13, 18, .8)); }
+/* A barra do botão Jogar cobre o pé do banner: o logo fica acima dela, como o nome do jogo. */
+.hero-logo { position: absolute; left: 36px; bottom: 92px; width: min(40%, 520px); height: calc(100% - 92px - 34px); max-height: 260px; pointer-events: none; }
+.hero-logo img { width: 100%; height: 100%; object-fit: contain; object-position: left bottom; filter: drop-shadow(0 6px 22px rgba(0, 0, 0, .55)); }
 .hero-info h1 {
   font: 900 44px/1.05 var(--titulo);
   text-transform: uppercase;
@@ -754,16 +764,49 @@ function srcImagem(u, w, h, modo) {
 }
 
 // Se a miniatura falhar, tenta a imagem original; se ela também falhar, some.
-const ERRO_IMG = "if(this.dataset.orig&&this.getAttribute('src')!==this.dataset.orig){this.src=this.dataset.orig}else{this.remove()}";
+const ERRO_IMG = "if(this.dataset.orig&&this.getAttribute('src')!==this.dataset.orig){this.src=this.dataset.orig}else{if(this.parentNode)this.parentNode.classList.remove('tem-img');this.remove()}";
 
-function arte(j, classe) {
-  // A arte com as iniciais fica embaixo; a capa aparece por cima quando carrega.
-  // Se o link da capa não funcionar, a imagem some e as iniciais continuam lá.
+function arte(j, classe, imagem) {
+  // A arte com as iniciais fica embaixo e só aparece se a imagem não carregar.
+  const u = imagem || j.capa;
   const tam = TAMANHO_ARTE[classe];
-  const capa = j.capa
-    ? `<img class="arte-img" src="${esc(tam ? srcImagem(j.capa, tam[0], tam[1], 'cover') : j.capa)}" data-orig="${esc(j.capa)}" alt="" referrerpolicy="no-referrer" onerror="${ERRO_IMG}">`
+  const src = u ? (tam ? srcImagem(u, tam[0], tam[1], 'cover') : u) : '';
+  const capa = u
+    ? `<img class="arte-img" src="${esc(src)}" data-orig="${esc(u)}" alt="" decoding="sync" referrerpolicy="no-referrer" onerror="${ERRO_IMG}">`
     : '';
-  return `<div class="arte gerada ${classe}" style="--h:${matiz(j.id)}"><span class="ini">${esc(iniciais(j.nome))}</span>${capa}</div>`;
+  return `<div class="arte gerada ${u ? 'tem-img' : ''} ${classe}" style="--h:${matiz(j.id)}"><span class="ini">${esc(iniciais(j.nome))}</span>${capa}</div>`;
+}
+
+// ───────────── imagens da página do jogo prontas antes de aparecer ─────────────
+// Trocar de jogo monta a página de novo; se a imagem ainda não estiver pronta na memória,
+// aparecia um instante o fundo reserva. Agora as imagens são preparadas antes (e guardadas).
+
+const imagensProntas = new Map(); // url -> Image (manter a referência deixa ela pronta na memória)
+
+function prepararImagem(u) {
+  if (!u) return Promise.resolve();
+  const ja = imagensProntas.get(u);
+  if (ja) return ja.pronta;
+  const img = new Image();
+  img.referrerPolicy = 'no-referrer';
+  img.decoding = 'async';
+  img.src = u;
+  img.pronta = (img.decode ? img.decode() : new Promise((r) => { img.onload = r; img.onerror = r; })).catch(() => {});
+  imagensProntas.set(u, img);
+  return img.pronta;
+}
+
+const LOGO_TAM = [560, 270];
+function imagensDoHero(j) {
+  return [j.banner || j.capa, j.logo ? srcImagem(j.logo, LOGO_TAM[0], LOGO_TAM[1], 'contain') : ''].filter(Boolean);
+}
+
+// Prepara as imagens da página de todos os jogos, sem pressa (depois que a lista aparece).
+function prepararTodas() {
+  const fila = ui.jogos.flatMap(imagensDoHero).filter((u) => !imagensProntas.has(u));
+  let i = 0;
+  const proxima = () => { if (i < fila.length) prepararImagem(fila[i++]).then(proxima); };
+  proxima(); proxima();
 }
 
 // ───────────── render ─────────────
@@ -964,20 +1007,41 @@ function aplicarModo() {
   renderFerramentas();
 }
 
+let vezDetalhe = 0;
+
 function renderDetalhe() {
   if (naGrade()) return renderGrade();
   const j = jogoSel();
   const el = $('#detalhe');
+  const vez = ++vezDetalhe;
   if (!j) {
     el.innerHTML = `<div class="vazio"><h2>Nenhum jogo por aqui</h2>
       <p>Adicione jogos no <code>jogos.json</code> pra eles aparecerem na biblioteca.</p></div>`;
-    return;
+    return undefined;
   }
+  // Imagem ainda não pronta: deixa a página anterior na tela mais um pouquinho (até 400 ms).
+  const faltam = imagensDoHero(j).filter((u) => !imagensProntas.has(u) || !imagensProntas.get(u).complete);
+  if (faltam.length && el.querySelector('.hero')) {
+    Promise.race([Promise.all(faltam.map(prepararImagem)), new Promise((r) => setTimeout(r, 400))])
+      .then(() => { if (vez === vezDetalhe) montarDetalhe(j); });
+    return undefined;
+  }
+  faltam.forEach(prepararImagem);
+  return montarDetalhe(j);
+}
+
+function montarDetalhe(j) {
+  const el = $('#detalhe');
+  if (naGrade()) return;
+  const logo = j.logo
+    ? `<div class="hero-logo"><img src="${esc(srcImagem(j.logo, LOGO_TAM[0], LOGO_TAM[1], 'contain'))}" data-orig="${esc(j.logo)}" alt="${esc(j.nome)}" decoding="sync" referrerpolicy="no-referrer" onerror="if(this.dataset.orig&&this.getAttribute('src')!==this.dataset.orig){this.src=this.dataset.orig}else{this.closest('.hero').classList.remove('com-logo');this.parentNode.remove()}"></div>`
+    : '';
   el.innerHTML = `
-    <section class="hero">
+    <section class="hero ${j.banner ? 'com-banner' : ''} ${j.banner && j.logo ? 'com-logo' : ''}">
       ${ui.modo === 'grade' ? `<button type="button" class="voltar" data-voltar>${icone('voltar')}Biblioteca</button>` : ''}
-      ${arte(j, 'hero-arte')}
+      ${arte(j, 'hero-arte', j.banner || j.capa)}
       <div class="hero-sombra"></div>
+      ${j.banner ? logo : ''}
       <div class="hero-info">
         ${j.genero ? `<span class="etiqueta">${esc(j.genero)}</span>` : ''}
         <h1>${esc(j.nome)}</h1>
@@ -1227,6 +1291,7 @@ async function carregar(manual) {
   try {
     aplicar(await tlw.catalogo());
     render();
+    setTimeout(prepararTodas, 300);
     if (manual) toast(ui.online ? 'Lista de jogos atualizada.' : 'Sem conexão com a lista online. Usando a última salva.', ui.online ? 'ok' : '');
   } finally {
     btn.classList.remove('girando');
