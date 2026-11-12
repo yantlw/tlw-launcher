@@ -191,7 +191,7 @@ function nomeDoArquivo(jogo, url) {
 }
 
 const infoBasica = (j) => ({
-  id: j.id, nome: j.nome, descricao: j.descricao, capa: j.capa,
+  id: j.id, nome: j.nome, descricao: j.descricao, capa: j.capa, banner: j.banner, logo: j.logo,
   desenvolvedor: j.desenvolvedor, genero: j.genero, versao: j.versao,
 });
 
