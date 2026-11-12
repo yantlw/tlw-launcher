@@ -36,12 +36,12 @@
       "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/856618-f3c3ipe6-v4-mwa5bv7n.webp",
       "tipo": "exe",
       "download": [
-        "https://github.com/yantlw/Five-nights-at-chara-lobisomem/releases/download/v1.4.3.0/FNACL-1.4.3.exe"
+        "https://github.com/yantlw/Five-nights-at-chara-lobisomem/releases/download/v1.4.5/FNACL-REMASTERED.exe"
       ],
-      "versao": "1.4.3.0",
-      "notas": "isso ai",
-      "arquivo": "FNACL-1.4.3.exe",
-      "tamanho": "84,5 MB",
+      "versao": "1.4.5",
+      "notas": "REMASTERED",
+      "arquivo": "FNACL-REMASTERED.exe",
+      "tamanho": "99,3 MB",
       "repo": "Five-nights-at-chara-lobisomem",
       "galeria": [
         "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/28490711-avkxvay3-v4-mwcd027k.png",
@@ -54,7 +54,9 @@
         "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/28490714-vfx3ydpn-v4-mwcczxqw.png",
         "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/28490715-nqdumjwx-v4-mwcczyvt.png",
         "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/28490713-yxrg7beh-v4-mwcd018m.png"
-      ]
+      ],
+      "atualizadoEm": "2026-11-12T02:42:04.808Z",
+      "lancadoEm": "2026-11-12T02:42:04.808Z"
     },
     {
       "id": "jogo",
