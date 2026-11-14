@@ -324,6 +324,12 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
   font-size: 13px;
 }
 
+/* Recursos do jogo: "1 jogador", "Jogável com controle"... logo abaixo do botão Jogar. */
+.recursos { display: flex; flex-wrap: wrap; gap: 8px; padding: 18px 24px 0; }
+.recurso { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 13px 0 10px; border-radius: 8px;
+  background: var(--painel); border: 1px solid var(--borda); color: #d5d9e3; font-size: 13px; font-weight: 600; }
+.recurso svg { width: 18px; height: 18px; color: color-mix(in srgb, var(--acento) 55%, white); flex: none; }
+.recursos + .info { padding-top: 16px; }
 .info { display: grid; grid-template-columns: 3fr 2fr; gap: 18px; padding: 22px 24px 36px; align-items: start; }
 .bloco { padding: 18px 20px; border-radius: 12px; background: var(--painel); border: 1px solid var(--borda); }
 .bloco h3 { margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--txt3); }
@@ -738,7 +744,7 @@ const PREFS = 'tlw-biblioteca';
 Object.assign(ui, { inicio: true, vitScroll: {}, modo: 'lista', ordem: 'padrao', filtro: 'todos', gradeAberta: false, orgAberto: false, menuAberto: false });
 try {
   const salvo = JSON.parse(localStorage.getItem(PREFS)) || {};
-  if (['lista', 'grade'].includes(salvo.modo)) ui.modo = salvo.modo;
+  // (o modo grade saiu: a biblioteca é sempre em lista)
   if (typeof salvo.ordem === 'string') ui.ordem = salvo.ordem;
   if (typeof salvo.filtro === 'string') ui.filtro = salvo.filtro;
 } catch { /* sem preferências salvas */ }
@@ -984,10 +990,7 @@ function ferramentasHTML(comBusca) {
         ${FILTROS.map(([k, n]) => `<button type="button" data-filtro="${k}" class="${k === ui.filtro ? 'on' : ''}">${n}</button>`).join('')}
       </div>
     </div>
-    <div class="modos">
-      <button type="button" data-vista="lista" title="Ver em lista" class="${ui.modo === 'lista' ? 'on' : ''}">${icone('lista')}</button>
-      <button type="button" data-vista="grade" title="Ver em grade" class="${ui.modo === 'grade' ? 'on' : ''}">${icone('grade')}</button>
-    </div>`;
+`;
 }
 
 function renderFerramentas() {
@@ -1325,6 +1328,7 @@ function montarDetalhe(j) {
       </div>
     </section>
     <section class="barra-acao" id="barra-acao"></section>
+    ${recursosHTML(j)}
     ${j.removido ? '<p class="aviso">Esse jogo saiu da lista da TLW Games, mas continua instalado no seu computador.</p>' : ''}
     <section class="info">
       <div class="bloco"><h3>Sobre o jogo</h3>
@@ -1337,6 +1341,26 @@ function montarDetalhe(j) {
     </div>`;
   renderAcao(true);
   carregarExtras(j.id);
+}
+
+// ───────────── recursos do jogo ─────────────
+
+const ICONES_RECURSO = {
+  '1 jogador': '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 20c.8-3.6 3.6-5.6 7-5.6s6.2 2 7 5.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  '2 jogadores': '<svg viewBox="0 0 24 24"><circle cx="8.5" cy="8.5" r="3.1" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="16.5" cy="9.5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.8 19.5c.6-3.2 2.9-5 5.7-5s5.1 1.8 5.7 5M14.6 14.7c2.9-.6 5.8.9 6.6 4.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  'Jogável com controle': '<svg viewBox="0 0 24 24"><path d="M7.5 7h9a4.5 4.5 0 0 1 4.4 3.6l1 5a2.6 2.6 0 0 1-4.5 2.2L15.2 16H8.8l-2.2 1.8a2.6 2.6 0 0 1-4.5-2.2l1-5A4.5 4.5 0 0 1 7.5 7z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7.5 10v3M6 11.5h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="15.5" cy="10.6" r="1" fill="currentColor"/><circle cx="17.4" cy="12.6" r="1" fill="currentColor"/></svg>',
+  'Teclado e mouse': '<svg viewBox="0 0 24 24"><rect x="2.5" y="6.5" width="19" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7.5 14h9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>',
+  'Tela cheia': '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  'Salva o progresso': '<svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 4v5h7V4M8 20v-6h8v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>',
+  'Dublado em português': '<svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  'Legendas em português': '<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7 13h4M13 13h4M7 16h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+};
+const ICONE_RECURSO_OUTRO = '<svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+
+function recursosHTML(j) {
+  const lista = [].concat(j.recursos || []).map((r) => String(r || '').trim()).filter(Boolean);
+  if (!lista.length) return '';
+  return `<section class="recursos">${lista.map((r) => `<span class="recurso">${ICONES_RECURSO[r] || ICONE_RECURSO_OUTRO}${esc(r)}</span>`).join('')}</section>`;
 }
 
 // ───────────── galeria ─────────────
