@@ -852,7 +852,7 @@ function iniciais(nome) {
 
 // Tamanho (em px de tela) de cada lugar onde a capa aparece: a imagem chega já reduzida
 // com qualidade pelo launcher, sem serrilhado. O hero é grande, então usa a original.
-const TAMANHO_ARTE = { mini: [44, 44], 'card-arte': [440, 248], 'dl-capa': [184, 104] };
+const TAMANHO_ARTE = { mini: [44, 44], chip: [20, 20], 'card-arte': [440, 248], 'dl-capa': [184, 104] };
 
 function srcImagem(u, w, h, modo) {
   const d = Math.min(3, window.devicePixelRatio || 1);
@@ -1012,7 +1012,7 @@ function renderLista() {
       + jogos.map((j) => {
         const [sub, cls] = situacao(j);
         return `<button type="button" class="item ${j.id === ui.selecionado && !ui.inicio ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
-          ${arte(j, 'mini')}
+          ${arte(j, 'mini', j.icone || j.capa)}
           <span class="item-txt"><span class="item-linha"><span class="item-nome">${esc(j.nome)}</span>${seloMini(j)}</span><span class="item-sub">${sub}</span></span>
         </button>`;
       }).join('')).join('')
@@ -1125,7 +1125,7 @@ function cardNovidade(j) {
     <span class="vit-quando">${esc(quando)}</span>
     <span class="vit-img">${arte(j, 'vit-arte')}${n.tipo ? `<span class="vit-tag ${n.tipo}">${TAG_NOVIDADE[n.tipo]}</span>` : ''}</span>
     <span class="vit-titulo">${esc(titulo)}</span>
-    <span class="vit-jogo">${arte(j, 'chip')}<span>${esc(j.nome)}</span></span>
+    <span class="vit-jogo">${arte(j, 'chip', j.icone || j.capa)}<span>${esc(j.nome)}</span></span>
   </div>`;
 }
 
