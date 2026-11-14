@@ -277,7 +277,7 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 .btn:not(:disabled):hover { filter: brightness(1.1); }
 .btn:not(:disabled):active { transform: translateY(1px); }
 .btn:disabled { cursor: default; }
-.btn-jogar { background: linear-gradient(180deg, #45e08a, #1fb866); color: #04230f; box-shadow: 0 6px 22px rgba(51, 209, 122, .25); }
+.btn-jogar { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .1)), var(--acento); color: #fff; box-shadow: 0 6px 22px color-mix(in srgb, var(--acento) 28%, transparent); }
 .btn-prim { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .1)), var(--acento); color: #fff; box-shadow: 0 6px 22px color-mix(in srgb, var(--acento) 28%, transparent); }
 .btn-atual { background: linear-gradient(180deg, #ffcb45, #f0a300); color: #2a1b00; box-shadow: 0 6px 22px rgba(255, 184, 0, .22); }
 .btn-sec { background: var(--painel2); border: 1px solid var(--borda); color: var(--txt); }
@@ -434,7 +434,7 @@ body.modo-grade .lateral { display: none; }
   box-shadow: 0 6px 18px rgba(0, 0, 0, .45); }
 .card-rapido svg { width: 20px; height: 20px; }
 .card:hover .card-rapido, .card:focus-within .card-rapido { opacity: 1; transform: none; }
-.card-rapido.jogar { background: linear-gradient(180deg, #45e08a, #1fb866); color: #04230f; }
+.card-rapido.jogar { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(0, 0, 0, .1)), var(--acento); color: #fff; }
 .card-rapido.instalar { background: var(--acento); color: #fff; }
 .card-rapido.atualizar { background: linear-gradient(180deg, #ffcb45, #f0a300); color: #2a1b00; }
 .card-rapido:hover { filter: brightness(1.12); }
@@ -559,13 +559,13 @@ body.modo-grade .lateral { display: none; }
 .inicio-btn:hover { color: var(--txt); background: var(--painel2); }
 .inicio-btn.sel { color: #fff; border-color: color-mix(in srgb, var(--acento) 60%, transparent);
   background: linear-gradient(90deg, color-mix(in srgb, var(--acento) 28%, transparent), color-mix(in srgb, var(--acento) 8%, transparent)); }
-.inicio-pagina { padding: 4px 0 40px; }
+.inicio-pagina { padding: 2px 0 20px; }
 .grade-pagina .vitrine { margin: -22px -30px 8px; }
-.prateleira { padding: 10px 30px 16px; }
+.prateleira { padding: 6px 30px 12px; }
 .prateleira + .prateleira { border-top: 1px solid var(--borda); }
-.prat-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.prat-topo { display: flex; align-items: center; gap: 4px; margin-bottom: 0; }
 .prat-topo h2 { font-size: 19px; font-weight: 700; letter-spacing: 0; text-transform: none; }
-.prat-topo .linha { flex: 1; height: 1px; background: var(--borda); margin: 0 6px; }
+.prat-topo .linha { flex: 1; }
 .prat-seta { width: 32px; height: 32px; border-radius: 6px; display: grid; place-items: center; color: var(--txt); }
 .prat-seta:hover:not(:disabled) { background: rgba(255, 255, 255, .08); }
 .prat-seta:disabled { opacity: .25; cursor: default; }
@@ -573,9 +573,11 @@ body.modo-grade .lateral { display: none; }
 .prat-seta.prox svg { transform: scaleX(-1); }
 .prat-trilho { display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 4px 2px 6px; margin: 0 -2px; }
 .prat-trilho::-webkit-scrollbar { display: none; }
+[data-prat="novidades"] .prat-trilho { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(var(--nov-w, 256px), 1fr); }
+[data-prat="novidades"] .vit-card { width: auto; min-width: 0; }
 .vit-card { flex: none; width: 256px; display: flex; flex-direction: column; text-align: left; color: var(--txt); cursor: pointer; }
 .vit-card:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; border-radius: 6px; }
-.vit-quando { height: 20px; font-size: 12.5px; color: var(--txt3); white-space: nowrap; }
+.vit-quando { height: 19px; font-size: 12.5px; color: var(--txt3); white-space: nowrap; }
 .vit-img { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: var(--painel2);
   transition: transform .15s, box-shadow .15s; }
 .vit-img .arte { position: absolute; inset: 0; }
@@ -598,7 +600,10 @@ body.modo-grade .lateral { display: none; }
 /* Jogos recentes: capas em pé + o mais recente largo com o painel de tempo embaixo (igual à Steam). */
 .rec-card { flex: none; display: flex; flex-direction: column; cursor: pointer; color: var(--txt); }
 .rec-card:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; border-radius: 4px; }
-.rec-arte { position: relative; display: block; width: 168px; height: 252px; border-radius: 4px; overflow: hidden; background: var(--painel2);
+/* A altura acompanha a janela: janela alta, cards maiores (sem sobrar espaço embaixo). */
+.inicio-pagina { --nov-w: clamp(256px, 20vw, 360px); --rec-h: clamp(230px, calc(100vh - 452px - (var(--nov-w) - 256px) * .5625), 500px); }
+.grade-pagina { --rec-h: 252px; }
+.rec-arte { position: relative; display: block; width: calc(var(--rec-h) * 2 / 3); height: var(--rec-h); border-radius: 4px; overflow: hidden; background: var(--painel2);
   transition: transform .15s, box-shadow .15s; }
 .rec-card:hover .rec-arte, .rec-card:focus-visible .rec-arte { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, .5); }
 .rec-card:hover .card-rapido, .rec-card:focus-within .card-rapido { opacity: 1; transform: none; }
@@ -616,7 +621,7 @@ body.modo-grade .lateral { display: none; }
 .rec-tag.rodando { background: #1fb866; color: #04230f; }
 .rec-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(0, 0, 0, .5); }
 .rec-prog div { height: 100%; background: var(--acento); }
-.rec-card.destaque .rec-arte { width: 360px; height: 252px; display: flex; flex-direction: column; background: #1b2130; }
+.rec-card.destaque .rec-arte { width: calc(var(--rec-h) * 1.43); height: var(--rec-h); display: flex; flex-direction: column; background: #1b2130; }
 .rec-card.destaque .rec-topo { position: relative; flex: 1; overflow: hidden; }
 .rec-card.destaque .rec-topo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rec-card.destaque .rec-logo { left: 5%; right: auto; width: 62%; bottom: 8%; height: 50%; }
@@ -1126,13 +1131,14 @@ const IMG_ERRO_SOME = "this.remove()";
 // Arte da prateleira: o banner + o logo da página do jogo (igual à Steam). Sem banner, usa a capa.
 function arteRecente(j, largo) {
   const d = Math.min(3, window.devicePixelRatio || 1);
-  const [w, h] = largo ? [360, 178] : [168, 252];
+  const [w, h] = largo ? [570, 330] : [268, 400];
   const img = (u, ww, hh, modo, cls, extra = '') => `<img class="${cls}" src="${esc(tlw.mini ? tlw.mini(u, ww * d, hh * d, modo) : u)}" alt="" decoding="sync" referrerpolicy="no-referrer" onerror="${IMG_ERRO_SOME}" ${extra}>`;
   if (j.banner) {
     const logo = j.logo
-      ? `<span class="rec-logo">${img(j.logo, largo ? 230 : 140, largo ? 90 : 86, 'contain', '')}</span>`
+      ? `<span class="rec-logo">${img(j.logo, largo ? 360 : 220, largo ? 170 : 140, 'contain', '')}</span>`
       : `<span class="rec-nome">${esc(j.nome)}</span>`;
-    return `${img(j.banner, w, h, 'cover', '')}<span class="rec-sombra"></span>${logo}`;
+    const x = Number.isFinite(Number(j.cardX)) ? Math.max(0, Math.min(100, Number(j.cardX))) : 50;
+    return `${img(j.banner, w, h, 'cover', '', largo ? '' : `style="object-position:${x}% center"`)}<span class="rec-sombra"></span>${logo}`;
   }
   if (j.capa) {
     if (largo) return img(j.capa, w, h, 'cover', '');
@@ -1195,8 +1201,12 @@ function prateleirasHTML() {
   let tituloRec = 'Jogos recentes';
   if (!recentes.length) { recentes = visiveis.filter((j) => !j.emBreve).slice(0, 15); tituloRec = 'Comece a jogar'; }
   let ultimoRotulo = null;
+  const qtdRec = recentes.length;
+  if (tituloRec === 'Jogos recentes') {
+    recentes = recentes.concat(visiveis.filter((j) => !j.instalado && !j.emBreve)).slice(0, 15);
+  }
   const cardsRec = recentes.map((j, i) => {
-    const r = tituloRec === 'Jogos recentes' ? rotuloData(quando(j)) : '';
+    const r = tituloRec !== 'Jogos recentes' ? '' : i < qtdRec ? rotuloData(quando(j)) : 'pra conhecer';
     const mostrar = r !== ultimoRotulo ? r : '';
     ultimoRotulo = r;
     return cardRecente(j, tituloRec === 'Jogos recentes' ? i : -1, mostrar);
