@@ -270,6 +270,18 @@ function anotarVistos() {
   if (mudou) salvarJSON(ARQ_VISTOS, v);
 }
 
+// Pra prateleira "Novidades" da página inicial: quando foi a última novidade do jogo e de que tipo.
+// Usa as datas que o Admin grava; se não tiver, o dia em que este launcher viu o jogo/versão.
+function novidade(j, breve) {
+  if (j.removido) return { em: 0, tipo: '' };
+  if (breve) return { em: Date.parse(j.lancamento || '') || 0, tipo: 'embreve' };
+  const v = lerJSON(ARQ_VISTOS, {})[j.id] || {};
+  const lanc = Date.parse(j.lancadoEm || '') || v.visto || 0;
+  const atu = Date.parse(j.atualizadoEm || '') || v.versaoEm || 0;
+  if (atu > lanc + 60000) return { em: atu, tipo: 'atualizacao' };
+  return { em: lanc, tipo: lanc ? 'lancamento' : '' };
+}
+
 function selo(j, breve) {
   if (breve || j.removido) return '';
   const limite = Date.now() - DIAS_SELO * 864e5;
@@ -322,6 +334,7 @@ function combinar(j, inst) {
     ...j,
     emBreve: breve,
     selo: selo(j, breve),
+    novidade: novidade(j, breve),
     avisar: lerAvisos().includes(j.id),
     download: resumoDownload(j.id),
     instalado: inst ? {
@@ -329,6 +342,7 @@ function combinar(j, inst) {
       tempoJogado: inst.tempoJogado || 0,
       tamanho: inst.tamanho || 0,
       ultimaVez: inst.ultimaVez || null,
+      instaladoEm: inst.instaladoEm || null,
       atalho: !!(inst.atalho && fs.existsSync(inst.atalho)),
       pasta: pastaDoJogo(j.id),
       foraDaPasta: !!inst.pasta,
