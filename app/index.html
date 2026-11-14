@@ -285,7 +285,7 @@ code { background: var(--painel2); padding: 1px 6px; border-radius: 4px; font-si
 .btn-jogando { background: #173325; color: #7fe3ab; }
 
 /* Altura fixa + quebra escondida: em janela pequena, as informações que não cabem somem sozinhas (as últimas primeiro). */
-.stats { flex: 1; min-width: 0; height: 46px; overflow: hidden; display: flex; flex-wrap: wrap; column-gap: 30px; }
+.stats { flex: 1; min-width: 0; height: 46px; overflow: hidden; display: flex; flex-wrap: wrap; column-gap: 26px; }
 .stat { height: 46px; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
 .stat svg { width: 26px; height: 26px; color: var(--txt2); }
 .stat-txt { display: flex; flex-direction: column; line-height: 1.3; }
@@ -552,6 +552,55 @@ body.modo-grade .lateral { display: none; }
 .selo-mini.atualizado { background: rgba(77, 166, 255, .18); color: #8cc8ff; }
 .card-selo.atualizado { color: #8cc8ff; }
 
+/* ───────── página inicial (igual à Steam) ───────── */
+.inicio-btn { display: flex; align-items: center; gap: 10px; margin: 0 4px 12px; height: 38px; padding: 0 12px; border-radius: 8px;
+  background: var(--painel); border: 1px solid var(--borda); color: var(--txt2); font-weight: 700; font-size: 13.5px; text-align: left; }
+.inicio-btn svg { width: 17px; height: 17px; }
+.inicio-btn:hover { color: var(--txt); background: var(--painel2); }
+.inicio-btn.sel { color: #fff; border-color: color-mix(in srgb, var(--acento) 60%, transparent);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--acento) 28%, transparent), color-mix(in srgb, var(--acento) 8%, transparent)); }
+.inicio-pagina { padding: 22px 0 40px; }
+.grade-pagina .vitrine { margin: -8px -30px 8px; }
+.prateleira { padding: 14px 30px 18px; }
+.prateleira + .prateleira { border-top: 1px solid var(--borda); }
+.prat-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.prat-topo h2 { font-size: 19px; font-weight: 700; letter-spacing: 0; text-transform: none; }
+.prat-topo .linha { flex: 1; height: 1px; background: var(--borda); margin: 0 6px; }
+.prat-seta { width: 32px; height: 32px; border-radius: 6px; display: grid; place-items: center; color: var(--txt); }
+.prat-seta:hover:not(:disabled) { background: rgba(255, 255, 255, .08); }
+.prat-seta:disabled { opacity: .25; cursor: default; }
+.prat-seta svg { width: 20px; height: 20px; }
+.prat-seta.prox svg { transform: scaleX(-1); }
+.prat-trilho { display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 4px 2px 6px; margin: 0 -2px; }
+.prat-trilho::-webkit-scrollbar { display: none; }
+.vit-card { flex: none; width: 256px; display: flex; flex-direction: column; text-align: left; color: var(--txt); cursor: pointer; }
+.vit-card:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; border-radius: 6px; }
+.vit-quando { height: 20px; font-size: 12.5px; color: var(--txt3); white-space: nowrap; }
+.vit-img { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: var(--painel2);
+  transition: transform .15s, box-shadow .15s; }
+.vit-img .arte { position: absolute; inset: 0; }
+.vit-card:hover .vit-img, .vit-card:focus-visible .vit-img { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, .45); }
+.vit-card:hover .card-rapido, .vit-card:focus-within .card-rapido { opacity: 1; transform: none; }
+.vit-tag { position: absolute; right: 8px; top: 8px; padding: 2px 8px; border-radius: 4px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em;
+  background: rgba(10, 12, 18, .82); color: #fff; }
+.vit-tag.lancamento, .vit-tag.novo { background: linear-gradient(90deg, var(--acento), var(--acento2)); }
+.vit-tag.atualizacao { background: #1f6fd1; }
+.vit-tag.embreve { background: rgba(10, 12, 18, .85); color: #ffd36b; }
+.vit-tag.rodando { background: #1fb866; color: #04230f; }
+.vit-titulo { margin-top: 8px; font-size: 14px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px; }
+.vit-jogo { margin-top: 6px; align-self: flex-start; max-width: 100%; display: inline-flex; align-items: center; gap: 7px; padding: 3px 8px 3px 3px; border-radius: 4px;
+  background: rgba(255, 255, 255, .06); color: var(--txt2); font-size: 12.5px; }
+.vit-jogo span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vit-jogo .arte.chip { width: 20px; height: 20px; flex: none; border-radius: 3px; }
+.vit-jogo .arte.chip .ini { font-size: 7px; }
+.vit-card.destaque { width: 360px; }
+.vit-stats { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px;
+  background: linear-gradient(180deg, transparent, rgba(8, 10, 15, .92) 45%); font-size: 12.5px; color: #d5d9e3; }
+.vit-stats b { color: #fff; font-weight: 700; }
+.vit-nome { margin-top: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vit-sub { font-size: 12.5px; color: var(--txt3); }
+.prat-vazia { padding: 22px 0 6px; color: var(--txt3); }
+
 @media (max-width: 1100px) {
   .info { grid-template-columns: 1fr; }
   .stats { column-gap: 22px; }
@@ -617,6 +666,7 @@ body.ver-config #config, body.ver-downloads #downloads { display: block; }
 
   <div class="corpo">
     <aside class="lateral">
+      <button type="button" class="inicio-btn sel" id="btn-inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>Página inicial</button>
       <input id="busca" class="busca" data-busca type="search" placeholder="Buscar jogo…" autocomplete="off">
       <div class="ferramentas" id="ferr-lista"></div>
       <div id="lista" class="lista"></div>
@@ -645,7 +695,7 @@ const ui = { jogos: [], online: false, selecionado: null, progresso: {}, busca: 
 
 // Como a pessoa prefere ver a biblioteca (fica salvo neste computador).
 const PREFS = 'tlw-biblioteca';
-Object.assign(ui, { modo: 'lista', ordem: 'padrao', filtro: 'todos', gradeAberta: false, orgAberto: false, menuAberto: false });
+Object.assign(ui, { inicio: true, vitScroll: {}, modo: 'lista', ordem: 'padrao', filtro: 'todos', gradeAberta: false, orgAberto: false, menuAberto: false });
 try {
   const salvo = JSON.parse(localStorage.getItem(PREFS)) || {};
   if (['lista', 'grade'].includes(salvo.modo)) ui.modo = salvo.modo;
@@ -913,11 +963,12 @@ function vazioFiltrado() {
 
 function renderLista() {
   const grupos = secoes();
+  $('#btn-inicio').classList.toggle('sel', ui.inicio && ui.modo === 'lista');
   $('#lista').innerHTML = grupos.length
     ? grupos.map(({ titulo, jogos }) => `<div class="lateral-titulo">${titulo || 'Seus jogos'} <span class="qtd">(${jogos.length})</span></div>`
       + jogos.map((j) => {
         const [sub, cls] = situacao(j);
-        return `<button type="button" class="item ${j.id === ui.selecionado ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
+        return `<button type="button" class="item ${j.id === ui.selecionado && !ui.inicio ? 'sel' : ''} ${cls}" data-id="${esc(j.id)}">
           ${arte(j, 'mini')}
           <span class="item-txt"><span class="item-linha"><span class="item-nome">${esc(j.nome)}</span>${seloMini(j)}</span><span class="item-sub">${sub}</span></span>
         </button>`;
@@ -978,13 +1029,161 @@ function renderGradeItens() {
 }
 
 function renderGrade() {
+  guardarScrollVitrine();
   $('#detalhe').innerHTML = `<div class="grade-pagina">
+    <div class="vitrine">${prateleirasHTML()}</div>
     <div class="grade-topo"><h2>Biblioteca<span class="qtd" id="grade-qtd"></span></h2><div class="ferramentas" id="ferr-grade" style="margin:0;flex-wrap:wrap"></div></div>
     <div id="grade-itens"></div>
   </div>`;
   $('#ferr-grade').innerHTML = ferramentasHTML(true);
   renderGradeItens();
+  ligarPrateleiras();
 }
+
+// ───────────── página inicial: Novidades + Jogos recentes ─────────────
+
+function rotuloData(t, futuro) {
+  if (!t) return '';
+  const d = new Date(t);
+  const hoje = new Date();
+  const dia = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const dias = Math.round((dia(hoje) - dia(d)) / 864e5);
+  if (dias < 0 || futuro) return dias === -1 ? 'chega amanhã' : `chega ${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`;
+  if (dias === 0) return 'hoje';
+  if (dias === 1) return 'ontem';
+  if (dias < 7) return 'esta semana';
+  if (dias < 14) return 'semana passada';
+  const mes = d.toLocaleDateString('pt-BR', { month: 'long' });
+  return d.getFullYear() === hoje.getFullYear() ? mes : `${mes} de ${d.getFullYear()}`;
+}
+
+function primeiraLinha(t) {
+  return String(t || '').split(/\r?\n/).map((l) => l.replace(/^[\s#*•\-–]+/, '').replace(/\*\*/g, '').trim()).find(Boolean) || '';
+}
+
+const TAG_NOVIDADE = { atualizacao: 'ATUALIZAÇÃO', lancamento: 'LANÇAMENTO', embreve: 'EM BREVE' };
+
+function cardNovidade(j) {
+  const n = j.novidade || {};
+  const linha = primeiraLinha(j.notas);
+  const titulo = n.tipo === 'embreve'
+    ? (linha || 'Ative o "Me avise" pra saber quando sair')
+    : n.tipo === 'lancamento'
+      ? `Já disponível!${linha ? ` ${linha}` : ''}`
+      : `Versão ${j.versao}${linha ? `: ${linha}` : ' disponível'}`;
+  const quando = n.tipo === 'embreve' ? (n.em ? rotuloData(n.em, true) : 'em breve') : rotuloData(n.em);
+  return `<div class="vit-card" tabindex="0" data-card="${esc(j.id)}" title="${esc(j.nome)}">
+    <span class="vit-quando">${esc(quando)}</span>
+    <span class="vit-img">${arte(j, 'vit-arte')}${n.tipo ? `<span class="vit-tag ${n.tipo}">${TAG_NOVIDADE[n.tipo]}</span>` : ''}</span>
+    <span class="vit-titulo">${esc(titulo)}</span>
+    <span class="vit-jogo">${arte(j, 'chip')}<span>${esc(j.nome)}</span></span>
+  </div>`;
+}
+
+function cardRecente(j, i, rotulo) {
+  const inst = j.instalado || {};
+  let tag = '';
+  if (j.rodando) tag = '<span class="vit-tag rodando">JOGANDO</span>';
+  else if (j.atualizacao) tag = '<span class="vit-tag atualizacao">ATUALIZAÇÃO</span>';
+  else if (j.selo === 'novo') tag = '<span class="vit-tag novo">NOVO</span>';
+  const stats = i === 0 && j.instalado
+    ? `<span class="vit-stats"><span>Última sessão: <b>${esc(inst.ultimaVez ? fmtData(inst.ultimaVez) : 'nunca jogado')}</b></span>
+        <span>Total jogado: <b>${esc(fmtTempo(inst.tempoJogado))}</b></span></span>`
+    : '';
+  const [sub] = situacao(j);
+  return `<div class="vit-card ${i === 0 ? 'destaque' : ''}" tabindex="0" data-card="${esc(j.id)}" title="${esc(j.nome)}">
+    <span class="vit-quando">${esc(rotulo || '')}</span>
+    <span class="vit-img">${arte(j, 'vit-arte')}${tag}${stats}${i === 0 && j.instalado ? '' : botaoRapido(j)}</span>
+    <span class="vit-nome">${esc(j.nome)}</span>
+    <span class="vit-sub">${sub}</span>
+  </div>`;
+}
+
+function prateleira(id, titulo, cards, vazio) {
+  return `<section class="prateleira" data-prat="${id}">
+    <div class="prat-topo"><h2>${titulo}</h2><span class="linha"></span>
+      <button type="button" class="prat-seta" data-prat-seta="-1" title="Voltar">${icone('voltar')}</button>
+      <button type="button" class="prat-seta prox" data-prat-seta="1" title="Mais">${icone('voltar')}</button></div>
+    ${cards ? `<div class="prat-trilho">${cards}</div>` : `<p class="prat-vazia">${vazio}</p>`}
+  </section>`;
+}
+
+function prateleirasHTML() {
+  const visiveis = ui.jogos.filter((j) => !j.removido);
+  // Novidades: o que vai sair primeiro, depois as novidades mais recentes.
+  const nov = visiveis.filter((j) => j.novidade && j.novidade.tipo).sort((a, b) => {
+    const ea = a.novidade.tipo === 'embreve'; const eb = b.novidade.tipo === 'embreve';
+    if (ea !== eb) return ea ? -1 : 1;
+    if (ea) return (a.novidade.em || Infinity) - (b.novidade.em || Infinity);
+    return (b.novidade.em || 0) - (a.novidade.em || 0);
+  }).slice(0, 12);
+  // Jogos recentes: os que a pessoa jogou por último; depois os instalados que ela ainda não abriu.
+  const quando = (j) => (j.instalado && (j.instalado.ultimaVez || j.instalado.instaladoEm)) || 0;
+  let recentes = ui.jogos.filter((j) => j.instalado).sort((a, b) => quando(b) - quando(a)).slice(0, 15);
+  let tituloRec = 'Jogos recentes';
+  if (!recentes.length) { recentes = visiveis.filter((j) => !j.emBreve).slice(0, 15); tituloRec = 'Comece a jogar'; }
+  let ultimoRotulo = null;
+  const cardsRec = recentes.map((j, i) => {
+    const r = tituloRec === 'Jogos recentes' ? rotuloData(quando(j)) : '';
+    const mostrar = r !== ultimoRotulo ? r : '';
+    ultimoRotulo = r;
+    return cardRecente(j, tituloRec === 'Jogos recentes' ? i : -1, mostrar);
+  }).join('');
+  return prateleira('novidades', 'Novidades', nov.map(cardNovidade).join(''), 'Nenhuma novidade por enquanto.')
+    + prateleira('recentes', tituloRec, cardsRec, 'Nenhum jogo na lista ainda.');
+}
+
+function guardarScrollVitrine() {
+  document.querySelectorAll('[data-prat]').forEach((p) => {
+    const tr = p.querySelector('.prat-trilho');
+    if (tr) ui.vitScroll[p.dataset.prat] = tr.scrollLeft;
+  });
+}
+
+function ligarPrateleiras() {
+  document.querySelectorAll('[data-prat]').forEach((p) => {
+    const tr = p.querySelector('.prat-trilho');
+    const [ant, prox] = p.querySelectorAll('[data-prat-seta]');
+    if (!tr) { ant.disabled = true; prox.disabled = true; return; }
+    tr.style.scrollBehavior = 'auto';
+    tr.scrollLeft = ui.vitScroll[p.dataset.prat] || 0;
+    tr.style.scrollBehavior = '';
+    const setas = () => {
+      ant.disabled = tr.scrollLeft <= 2;
+      prox.disabled = tr.scrollLeft + tr.clientWidth >= tr.scrollWidth - 2;
+      ui.vitScroll[p.dataset.prat] = tr.scrollLeft;
+    };
+    tr.addEventListener('scroll', setas, { passive: true });
+    setas();
+  });
+}
+
+function renderInicio() {
+  guardarScrollVitrine();
+  vezDetalhe++;
+  $('#detalhe').innerHTML = `<div class="inicio-pagina">${prateleirasHTML()}</div>`;
+  ligarPrateleiras();
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('vit-card')) e.target.click();
+});
+
+// Setas das prateleiras.
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-prat-seta]');
+  if (!b || b.disabled) return;
+  const tr = b.closest('[data-prat]').querySelector('.prat-trilho');
+  if (tr) tr.scrollBy({ left: Number(b.dataset.pratSeta) * tr.clientWidth * 0.8 });
+});
+
+$('#btn-inicio').addEventListener('click', () => {
+  ui.inicio = true;
+  ui.menuAberto = false;
+  renderLista();
+  renderDetalhe();
+  $('#detalhe').scrollTop = 0;
+});
 
 // Durante o download, só mexe no card (sem redesenhar a grade inteira).
 function atualizarCard(id) {
@@ -1011,6 +1210,7 @@ let vezDetalhe = 0;
 
 function renderDetalhe() {
   if (naGrade()) return renderGrade();
+  if (ui.inicio && ui.modo === 'lista') return renderInicio();
   const j = jogoSel();
   const el = $('#detalhe');
   const vez = ++vezDetalhe;
@@ -1183,8 +1383,8 @@ function renderAcao(forcar) {
         ['calendario', 'Última sessão', fmtData(j.instalado.ultimaVez)],
         ['relogio', 'Tempo de jogo', fmtTempo(j.instalado.tempoJogado)],
         ['etiqueta', 'Versão', j.instalado.versao === '0' ? `antiga → ${j.versao}` : (j.atualizacao ? `${j.instalado.versao} → ${j.versao}` : j.instalado.versao)],
-        ['disco', 'Espaço em disco', fmtBytes(j.instalado.tamanho)],
         dl,
+        ['disco', 'Espaço em disco', fmtBytes(j.instalado.tamanho)],
       ]
       : [['etiqueta', 'Versão', j.versao || '—'], ['disco', 'Download', j.tamanho || '—'], dl]).filter(Boolean);
     meio = `<div class="stats">${stats.map(([ic, k, v]) =>
@@ -1369,8 +1569,9 @@ document.addEventListener('keydown', (e) => {
 
 $('#lista').addEventListener('click', (e) => {
   const item = e.target.closest('.item');
-  if (!item || item.dataset.id === ui.selecionado) return;
+  if (!item || (item.dataset.id === ui.selecionado && !ui.inicio)) return;
   ui.selecionado = item.dataset.id;
+  ui.inicio = false;
   ui.menuAberto = false;
   renderLista();
   renderDetalhe();
@@ -1379,6 +1580,7 @@ $('#lista').addEventListener('click', (e) => {
 function atualizarJogoNaTela(id) {
   renderLista();
   if (naGrade()) atualizarCard(id);
+  else if (ui.inicio && ui.modo === 'lista') renderInicio();
   else if (id === ui.selecionado) renderAcao(true);
 }
 
@@ -1413,6 +1615,7 @@ $('#detalhe').addEventListener('click', async (e) => {
     if (card) {
       ui.selecionado = card.dataset.card;
       ui.gradeAberta = true;
+      ui.inicio = false;
       ui.menuAberto = false;
       renderLista();
       renderDetalhe();
@@ -1527,9 +1730,18 @@ tlw.aoProgresso((d) => {
   atualizarContador();
   progressoNaAbaDownloads(d);
   renderLista();
-  if (naGrade()) atualizarCard(d.id);
+  if (naGrade()) { atualizarCard(d.id); atualizarVitrine(d.id, d.fase === 'fim'); }
+  else if (ui.inicio && ui.modo === 'lista') atualizarVitrine(d.id, d.fase === 'fim');
   else if (d.id === ui.selecionado) renderAcao(d.fase === 'fim');
 });
+
+// Download andando: na página inicial só troca o texto do card (sem redesenhar as prateleiras).
+function atualizarVitrine(id, terminou) {
+  if (terminou) { if (naGrade()) { guardarScrollVitrine(); const v = $('.vitrine'); if (v) { v.innerHTML = prateleirasHTML(); ligarPrateleiras(); } } else renderInicio(); return; }
+  const j = ui.jogos.find((x) => x.id === id);
+  if (!j) return;
+  document.querySelectorAll(`.vit-card[data-card="${CSS.escape(id)}"] .vit-sub`).forEach((el) => { el.innerHTML = situacao(j)[0]; });
+}
 
 tlw.aoMudar(() => { atualizarLocal(); if (naAbaDownloads()) carregarDownloads(); });
 tlw.aoEvento('lancou', (d) => toast(`🎉 ${d.nome} chegou! Já dá pra instalar.`, 'ok'));
@@ -1756,6 +1968,7 @@ function renderConfig() {
 
 async function abrirAba(aba) {
   if (aba === 'biblioteca' && !foraDaBiblioteca() && ui.modo === 'grade' && ui.gradeAberta) voltarPraGrade();
+  else if (aba === 'biblioteca' && !foraDaBiblioteca() && ui.modo === 'lista' && !ui.inicio) { ui.inicio = true; renderLista(); renderDetalhe(); }
   fecharMenus();
   document.body.classList.toggle('ver-config', aba === 'config');
   document.body.classList.toggle('ver-downloads', aba === 'downloads');
