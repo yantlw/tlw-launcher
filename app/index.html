@@ -559,9 +559,9 @@ body.modo-grade .lateral { display: none; }
 .inicio-btn:hover { color: var(--txt); background: var(--painel2); }
 .inicio-btn.sel { color: #fff; border-color: color-mix(in srgb, var(--acento) 60%, transparent);
   background: linear-gradient(90deg, color-mix(in srgb, var(--acento) 28%, transparent), color-mix(in srgb, var(--acento) 8%, transparent)); }
-.inicio-pagina { padding: 22px 0 40px; }
-.grade-pagina .vitrine { margin: -8px -30px 8px; }
-.prateleira { padding: 14px 30px 18px; }
+.inicio-pagina { padding: 4px 0 40px; }
+.grade-pagina .vitrine { margin: -22px -30px 8px; }
+.prateleira { padding: 10px 30px 16px; }
 .prateleira + .prateleira { border-top: 1px solid var(--borda); }
 .prat-topo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .prat-topo h2 { font-size: 19px; font-weight: 700; letter-spacing: 0; text-transform: none; }
@@ -594,6 +594,41 @@ body.modo-grade .lateral { display: none; }
 .vit-jogo .arte.chip { width: 20px; height: 20px; flex: none; border-radius: 3px; }
 .vit-jogo .arte.chip .ini { font-size: 7px; }
 .vit-card.destaque { width: 360px; }
+
+/* Jogos recentes: capas em pé + o mais recente largo com o painel de tempo embaixo (igual à Steam). */
+.rec-card { flex: none; display: flex; flex-direction: column; cursor: pointer; color: var(--txt); }
+.rec-card:focus-visible { outline: 2px solid var(--acento); outline-offset: 4px; border-radius: 4px; }
+.rec-arte { position: relative; display: block; width: 168px; height: 252px; border-radius: 4px; overflow: hidden; background: var(--painel2);
+  transition: transform .15s, box-shadow .15s; }
+.rec-card:hover .rec-arte, .rec-card:focus-visible .rec-arte { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, .5); }
+.rec-card:hover .card-rapido, .rec-card:focus-within .card-rapido { opacity: 1; transform: none; }
+.rec-arte > img, .rec-arte .rec-fundo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rec-arte .rec-fundo { filter: blur(16px) brightness(.55) saturate(1.2); transform: scale(1.25); }
+.rec-arte .rec-capa { position: absolute; left: 0; right: 0; top: 50%; bottom: auto; transform: translateY(-50%); width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .55); }
+.rec-arte .rec-sombra { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(0, 0, 0, .55)); }
+.rec-arte .rec-logo { position: absolute; left: 8%; right: 8%; bottom: 7%; height: 34%; }
+.rec-arte .rec-logo img { width: 100%; height: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .6)); }
+.rec-arte .rec-nome { position: absolute; left: 10px; right: 10px; bottom: 12px; font: 900 17px/1.1 var(--titulo); text-transform: uppercase; text-align: center; text-shadow: 0 2px 12px rgba(0, 0, 0, .8); }
+.rec-arte .rec-ini { position: absolute; inset: 0; display: grid; place-items: center; font: 900 italic 40px var(--titulo); color: rgba(255, 255, 255, .85); }
+.rec-tag { position: absolute; right: 8px; top: 0; padding: 4px 9px 3px; border-radius: 0 0 4px 4px; font-size: 11px; font-weight: 800; letter-spacing: .06em; background: #1a9fff; color: #fff; }
+.rec-tag.atualizacao { background: #f0a300; color: #2a1b00; }
+.rec-tag.rodando { background: #1fb866; color: #04230f; }
+.rec-prog { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: rgba(0, 0, 0, .5); }
+.rec-prog div { height: 100%; background: var(--acento); }
+.rec-card.destaque .rec-arte { width: 360px; height: 252px; display: flex; flex-direction: column; background: #1b2130; }
+.rec-card.destaque .rec-topo { position: relative; flex: 1; overflow: hidden; }
+.rec-card.destaque .rec-topo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.rec-card.destaque .rec-logo { left: 5%; right: auto; width: 62%; bottom: 8%; height: 50%; }
+.rec-card.destaque .rec-logo img { object-position: left bottom; }
+.rec-card.destaque .rec-nome { left: 14px; right: 14px; text-align: left; }
+.rec-painel { height: 74px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 14px; background: rgba(40, 46, 60, .95); }
+.rec-painel .rec-icone { width: 46px; height: 46px; flex: none; border-radius: 4px; overflow: hidden; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--acento), var(--acento2)); color: #fff; }
+.rec-painel .rec-icone svg { width: 22px; height: 22px; }
+button.rec-icone:hover { filter: brightness(1.15); }
+.rec-painel .rec-txt { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: #aeb6c6; min-width: 0; }
+.rec-painel .rec-txt b { color: #fff; font-weight: 600; }
 .vit-stats { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px;
   background: linear-gradient(180deg, transparent, rgba(8, 10, 15, .92) 45%); font-size: 12.5px; color: #d5d9e3; }
 .vit-stats b { color: #fff; font-weight: 700; }
@@ -1058,7 +1093,13 @@ function rotuloData(t, futuro) {
 }
 
 function primeiraLinha(t) {
-  return String(t || '').split(/\r?\n/).map((l) => l.replace(/^[\s#*•\-–]+/, '').replace(/\*\*/g, '').trim()).find(Boolean) || '';
+  const linhas = String(t || '').split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const limpar = (l) => l.replace(/^([-*•–]|\d+[.)])\s*/, '').replace(/^#+\s*/, '').replace(/\*\*/g, '').trim();
+  // Prefere o primeiro item de lista; títulos ("🆕 Novidades", "## O que mudou:") ficam de fora.
+  const item = linhas.find((l) => /^([-*•–]|\d+[.)])\s+/.test(l));
+  if (item) return limpar(item);
+  const normal = linhas.find((l) => !/^#/.test(l) && !/:$/.test(l) && limpar(l).split(/\s+/).length > 2);
+  return limpar(normal || linhas[0] || '');
 }
 
 const TAG_NOVIDADE = { atualizacao: 'ATUALIZAÇÃO', lancamento: 'LANÇAMENTO', embreve: 'EM BREVE' };
@@ -1080,22 +1121,53 @@ function cardNovidade(j) {
   </div>`;
 }
 
+const IMG_ERRO_SOME = "this.remove()";
+
+// Arte da prateleira: o banner + o logo da página do jogo (igual à Steam). Sem banner, usa a capa.
+function arteRecente(j, largo) {
+  const d = Math.min(3, window.devicePixelRatio || 1);
+  const [w, h] = largo ? [360, 178] : [168, 252];
+  const img = (u, ww, hh, modo, cls, extra = '') => `<img class="${cls}" src="${esc(tlw.mini ? tlw.mini(u, ww * d, hh * d, modo) : u)}" alt="" decoding="sync" referrerpolicy="no-referrer" onerror="${IMG_ERRO_SOME}" ${extra}>`;
+  if (j.banner) {
+    const logo = j.logo
+      ? `<span class="rec-logo">${img(j.logo, largo ? 230 : 140, largo ? 90 : 86, 'contain', '')}</span>`
+      : `<span class="rec-nome">${esc(j.nome)}</span>`;
+    return `${img(j.banner, w, h, 'cover', '')}<span class="rec-sombra"></span>${logo}`;
+  }
+  if (j.capa) {
+    if (largo) return img(j.capa, w, h, 'cover', '');
+    // Capa deitada num card em pé: a capa inteira no meio, com ela mesma desfocada atrás.
+    return `${img(j.capa, 60, 90, 'cover', 'rec-fundo')}${img(j.capa, w, Math.round(w * 9 / 16), 'cover', 'rec-capa')}`;
+  }
+  return `<span class="rec-ini" style="background:linear-gradient(135deg, hsl(${matiz(j.id)} 65% 22%), hsl(${matiz(j.id) + 50} 70% 8%))">${esc(iniciais(j.nome))}</span>`;
+}
+
 function cardRecente(j, i, rotulo) {
   const inst = j.instalado || {};
   let tag = '';
-  if (j.rodando) tag = '<span class="vit-tag rodando">JOGANDO</span>';
-  else if (j.atualizacao) tag = '<span class="vit-tag atualizacao">ATUALIZAÇÃO</span>';
-  else if (j.selo === 'novo') tag = '<span class="vit-tag novo">NOVO</span>';
-  const stats = i === 0 && j.instalado
-    ? `<span class="vit-stats"><span>Última sessão: <b>${esc(inst.ultimaVez ? fmtData(inst.ultimaVez) : 'nunca jogado')}</b></span>
-        <span>Total jogado: <b>${esc(fmtTempo(inst.tempoJogado))}</b></span></span>`
-    : '';
+  if (j.rodando) tag = '<span class="rec-tag rodando">JOGANDO</span>';
+  else if (j.atualizacao) tag = '<span class="rec-tag atualizacao">ATUALIZAÇÃO</span>';
+  else if (j.selo === 'novo') tag = '<span class="rec-tag">NOVO</span>';
+  const p = ui.progresso[j.id];
+  const prog = p ? `<span class="rec-prog"><div style="width:${p.fase === 'instalando' ? 100 : pct(p)}%"></div></span>` : '';
   const [sub] = situacao(j);
-  return `<div class="vit-card ${i === 0 ? 'destaque' : ''}" tabindex="0" data-card="${esc(j.id)}" title="${esc(j.nome)}">
+  const dica = `${j.nome} · ${sub.replace(/<[^>]+>/g, '')}`;
+  if (i === 0 && j.instalado) {
+    const jogou = !!inst.tempoJogado;
+    const linhas = jogou
+      ? `<span>Última sessão: <b>${esc(fmtData(inst.ultimaVez))}</b></span><span>Total: <b>${esc(fmtTempo(inst.tempoJogado))}</b></span>`
+      : `<span><b>Ainda não jogado</b></span><span>Instalado ${esc(inst.instaladoEm ? fmtData(inst.instaladoEm).toLowerCase() : '')}</span>`;
+    return `<div class="rec-card destaque" tabindex="0" data-card="${esc(j.id)}" title="${esc(dica)}">
+      <span class="vit-quando">${esc(rotulo || '')}</span>
+      <span class="rec-arte">
+        <span class="rec-topo">${arteRecente(j, true)}${tag}${prog}</span>
+        <span class="rec-painel">${j.rodando ? `<span class="rec-icone">${icone('relogio')}</span>` : `<button type="button" class="rec-icone" data-acao="jogar" data-id="${esc(j.id)}" title="Jogar">${icone('play')}</button>`}<span class="rec-txt">${linhas}</span></span>
+      </span>
+    </div>`;
+  }
+  return `<div class="rec-card" tabindex="0" data-card="${esc(j.id)}" title="${esc(dica)}">
     <span class="vit-quando">${esc(rotulo || '')}</span>
-    <span class="vit-img">${arte(j, 'vit-arte')}${tag}${stats}${i === 0 && j.instalado ? '' : botaoRapido(j)}</span>
-    <span class="vit-nome">${esc(j.nome)}</span>
-    <span class="vit-sub">${sub}</span>
+    <span class="rec-arte">${arteRecente(j, false)}${tag}${prog}${botaoRapido(j)}</span>
   </div>`;
 }
 
@@ -1166,7 +1238,7 @@ function renderInicio() {
 }
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('vit-card')) e.target.click();
+  if (e.key === 'Enter' && e.target.classList && (e.target.classList.contains('vit-card') || e.target.classList.contains('rec-card'))) e.target.click();
 });
 
 // Setas das prateleiras.
@@ -1741,6 +1813,12 @@ function atualizarVitrine(id, terminou) {
   const j = ui.jogos.find((x) => x.id === id);
   if (!j) return;
   document.querySelectorAll(`.vit-card[data-card="${CSS.escape(id)}"] .vit-sub`).forEach((el) => { el.innerHTML = situacao(j)[0]; });
+  const p = ui.progresso[id];
+  document.querySelectorAll(`.rec-card[data-card="${CSS.escape(id)}"]`).forEach((c) => {
+    const barra = c.querySelector('.rec-prog div');
+    if (barra && p) barra.style.width = `${p.fase === 'instalando' ? 100 : pct(p)}%`;
+    else if (!!barra !== !!p) atualizarVitrine(id, true);
+  });
 }
 
 tlw.aoMudar(() => { atualizarLocal(); if (naAbaDownloads()) carregarDownloads(); });
