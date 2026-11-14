@@ -77,7 +77,12 @@
       "repo": "CCOM",
       "banner": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/31fc3d0a-9c74-4ab6-9fb5-04edb4-mwd2e722.png",
       "logo": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/9c5c20f3-9908-4e94-99eb-2c5f67-mwd2eiec.png",
-      "cardX": 96
+      "cardX": 96,
+      "recursos": [
+        "1 jogador",
+        "Tela cheia",
+        "Salva o progresso"
+      ]
     },
     {
       "id": "h",
