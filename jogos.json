@@ -47,14 +47,14 @@
       "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/970ce7cd-10a7-4fd9-96df-6b95c7-mwh1y7e6.png",
       "tipo": "exe",
       "download": [
-        "https://github.com/yantlw/Five-nights-at-chara-lobisomem/releases/download/v1.5.0/FNACL-REMASTERED.exe"
+        "https://github.com/yantlw/Five-nights-at-chara-lobisomem/releases/download/v1.5.1/FNACL-Remastered.exe"
       ],
-      "versao": "1.5.0",
-      "notas": "🆕 Novidades\nLigações telefônicas novas, das noites 1 a 6, com vozes novas e som de telefone antigo. Dá para desligar a qualquer momento.\nRádio FacãoHITS na câmera do Valdomiro: músicas, locutor e vinhetas, cada noite começando numa música diferente. Só não deixe a rádio parar...\nMenu de Extras, liberado ao zerar o jogo: galeria dos personagens, visualizador de jumpscares, ligações e a rádio para ouvir quando quiser.\nMúsica nova no menu principal e fanfarra 8-bit nova quando a noite termina.\nNova animação do Cururoca correndo pelo corredor.\nNova tela de Game Over.\nJornal novo, contando a história do Bar do Chará e dos assassinatos que nunca foram resolvidos.\nEstrelas no menu principal: zere a Noite 5, a Noite 6 e a Noite Personalizada com todos no 20.\n🎨 Visual\nCâmeras, escritório, jumpscares e máscara remasterizados: mais nitidez, contraste e detalhe.\nVisual de câmera de segurança, com chiado e efeito ao ligar e trocar de câmera.\nPainel de energia novo, com energia, uso e bateria da lanterna.\nPortas com animação mais suave, ventilador novo e máscara com balanço.\nFalta de energia com efeitos melhores de luz, tremida e estática.\nMenus, telas de 12 AM e 6 AM e transições refeitos.\n🔊 Som\nSom ambiente, ventilador, monitor e portas novos.\nPassos com direção e distância: quanto mais perto, mais alto, e vindo do lado certo.\nTodos os sons tratados: volume igualado, sem chiado e sem cortes secos.\n🎮 Jogabilidade\nIA de todos os personagens refeita, cada um com seu jeito próprio de atacar.\nDificuldade que sobe ao longo da noite, hora a hora.\nAs noites 1 a 5 seguem direto, sem voltar ao menu.\nMáscara liberada a partir da Noite 3.\nDicas na primeira noite.\nNoite Personalizada com níveis de 0 a 20 para cada personagem.\n⚙️ Outros\nTela cheia pelo F11 ou nas Opções.\nJogo 100% em português.\nCorreção de vários bugs do jogo original.",
-      "arquivo": "FNACL-REMASTERED.exe",
+      "versao": "1.5.1",
+      "notas": "🆕 Novidades\nChará com comportamento novo: rota diferente pelo restaurante, e agora ele some entre uma câmera e outra. Fique de olho... e de ouvido.\nCâmeras desativadas nas primeiras noites: nas noites 1 e 2, as câmeras dos personagens que ainda não apareceram ficam desligadas. Na Noite Personalizada, todas ficam sempre ativas.\nBotão “Sair” no menu principal.\n🔧 Melhorias\nTela cheia mais confiável, tanto pelo F11 quanto pelo botão nas Opções.\nMenu principal reorganizado para caber todos os botões quando tudo estiver liberado.\nNoite Personalizada no 20: dificuldade ajustada para ficar à altura da 3ª estrela.\n🐞 Correções\nO som de ameaça dos pastores continuava tocando depois que eles iam embora.\nNa Noite Personalizada, o Chará podia ficar parado no palco a noite inteira.\nA câmera do palco podia abrir mesmo estando desativada.\nApertar Esc durante um susto congelava a imagem.\nO mouse desfazia a opção escolhida pelo teclado nos menus.\nO medidor de uso de energia ficava travado durante o apagão.",
+      "arquivo": "FNACL-Remastered.exe",
       "tamanho": "111,8 MB",
       "repo": "Five-nights-at-chara-lobisomem",
-      "atualizadoEm": "2026-11-14T22:33:25.840Z",
+      "atualizadoEm": "2026-11-15T21:52:07.035Z",
       "lancadoEm": "2026-11-12T02:42:04.808Z",
       "banner": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/41dfff89-fc4a-4fa0-8b38-87913c-mwczl4iu.png",
       "logo": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/758958f8-35c7-42d5-a27d-4d1397-mwczjj33.png",
