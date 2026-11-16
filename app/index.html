@@ -1156,7 +1156,6 @@ function cardRecente(j, i, rotulo) {
   let tag = '';
   if (j.rodando) tag = '<span class="rec-tag rodando">JOGANDO</span>';
   else if (j.atualizacao) tag = '<span class="rec-tag atualizacao">ATUALIZAÇÃO</span>';
-  else if (j.selo === 'novo') tag = '<span class="rec-tag">NOVO</span>';
   const p = ui.progresso[j.id];
   const prog = p ? `<span class="rec-prog"><div style="width:${p.fase === 'instalando' ? 100 : pct(p)}%"></div></span>` : '';
   const [sub] = situacao(j);
