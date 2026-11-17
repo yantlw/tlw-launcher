@@ -551,12 +551,10 @@ body.modo-grade .lateral { display: none; }
 .dl-vazio { padding: 40px 20px; text-align: center; color: var(--txt3); border: 1px dashed var(--borda); border-radius: 12px; }
 .tag-auto { padding: 1px 7px; border-radius: 99px; font-size: 10.5px; font-weight: 700; letter-spacing: .04em; background: rgba(255, 255, 255, .08); color: var(--txt2); margin-left: 6px; vertical-align: 2px; }
 
-/* ───────── selos NOVO / ATUALIZADO ───────── */
+/* ───────── selo NOVO ───────── */
 .item-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .selo-mini { flex: none; padding: 0 6px; border-radius: 4px; font-size: 9.5px; font-weight: 800; letter-spacing: .08em; line-height: 16px; }
 .selo-mini.novo, .card-selo.novo { background: linear-gradient(90deg, var(--acento), var(--acento2)); color: #fff; }
-.selo-mini.atualizado { background: rgba(77, 166, 255, .18); color: #8cc8ff; }
-.card-selo.atualizado { color: #8cc8ff; }
 
 /* ───────── página inicial (igual à Steam) ───────── */
 .inicio-btn { display: flex; align-items: center; gap: 10px; margin: 0 4px 12px; height: 38px; padding: 0 12px; border-radius: 8px;
@@ -1035,7 +1033,6 @@ function seloCard(j) {
   if (j.atualizacao) return '<span class="card-selo atualizar">Atualização</span>';
   if (j.emBreve) return '<span class="card-selo embreve">Em breve</span>';
   if (j.selo === 'novo') return '<span class="card-selo novo">Novo</span>';
-  if (j.selo === 'atualizado') return '<span class="card-selo atualizado">Atualizado</span>';
   return '';
 }
 
@@ -1043,7 +1040,6 @@ function seloCard(j) {
 function seloMini(j) {
   if (j.rodando || j.atualizacao || j.emBreve || ui.progresso[j.id]) return '';
   if (j.selo === 'novo') return '<span class="selo-mini novo">NOVO</span>';
-  if (j.selo === 'atualizado') return '<span class="selo-mini atualizado">ATUALIZADO</span>';
   return '';
 }
 
@@ -2142,6 +2138,28 @@ $('#config').addEventListener('click', async (e) => {
 
 tlw.aoEvento('pasta', (d) => { cfgUI.movendo = d.fase === 'movendo'; renderConfig(); });
 
+
+// Discord: conta pro motor onde a pessoa está ("Na página inicial", "Vendo X"...).
+// Janela minimizada ou escondida perto do relógio = some do Discord.
+let discordTelaAntes = '';
+function avisarTelaDiscord() {
+  let tela;
+  let jogo = null;
+  if (document.hidden) tela = 'oculto';
+  else if (document.body.classList.contains('ver-config')) tela = 'config';
+  else if (document.body.classList.contains('ver-downloads')) tela = 'downloads';
+  else if (ui.inicio) tela = 'inicio';
+  else if (ui.selecionado) { tela = 'jogo'; jogo = ui.selecionado; }
+  else tela = 'biblioteca';
+  const chave = `${tela}|${jogo || ''}`;
+  if (chave === discordTelaAntes) return;
+  discordTelaAntes = chave;
+  tlw.chamar('discord-tela', { tela, jogo }).catch(() => { discordTelaAntes = ''; });
+}
+document.addEventListener('visibilitychange', avisarTelaDiscord);
+document.addEventListener('click', () => setTimeout(avisarTelaDiscord, 50));
+document.addEventListener('keyup', () => setTimeout(avisarTelaDiscord, 50));
+setInterval(avisarTelaDiscord, 2000);
 
 aplicarModo();
 carregar(false);
