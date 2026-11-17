@@ -64,11 +64,19 @@ a { color: inherit; }
   text-shadow: 0 0 34px rgba(176, 27, 255, .55); }
 .abertura .sub { margin-top: 22px; font-size: 19px; color: #d6cff2; max-width: 30em; }
 .chamada { margin-top: 34px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
-.chamada .btn-baixar { min-height: 66px; padding: 14px 30px; font-size: 20px; line-height: 1.2; }
-.no-celular { display: none; margin-top: 4px; padding: 10px 14px; border-radius: 10px; background: rgba(255, 210, 63, .1); border: 1px solid rgba(255, 210, 63, .35); color: #ffe9a3; font-size: 14.5px; }
-.celular .no-celular { display: block; }
-.chamada .info { font-size: 14.5px; color: var(--apagado); }
-.chamada .info b { color: var(--texto); font-weight: 700; }
+.chamada .btn { min-height: 62px; padding: 14px 26px; font-size: 19px; line-height: 1.2; }
+.chamada .btn svg { width: 22px; height: 22px; flex: none; }
+.no-iphone { display: none; margin-top: 4px; padding: 10px 14px; border-radius: 10px; background: rgba(255, 210, 63, .1); border: 1px solid rgba(255, 210, 63, .35); color: #ffe9a3; font-size: 14.5px; }
+.iphone .no-iphone { display: block; }
+.plataformas { display: flex; flex-wrap: wrap; gap: 14px; align-items: stretch; }
+.plataforma { display: flex; flex-direction: column; gap: 8px; }
+.plataforma .info { font-size: 14px; color: var(--apagado); max-width: 17em; }
+.plataforma .info b { color: var(--texto); font-weight: 700; }
+.btn-outro { background: rgba(255, 255, 255, .06); color: var(--texto); border: 1.5px solid rgba(255, 255, 255, .22); box-shadow: none; }
+.btn-outro:hover { background: rgba(255, 255, 255, .12); filter: none; }
+.btn[aria-disabled="true"] { opacity: .5; pointer-events: none; }
+/* No Android, o botão do Android vem primeiro e com a cor principal. */
+.android .plataformas { flex-direction: column-reverse; align-items: flex-start; }
 
 /* Pilha de banners dos jogos, como fitas de fliperama */
 .pilha { position: relative; height: 470px; }
@@ -104,6 +112,10 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
 .jogo h3 { font-size: 21px; font-weight: 800; line-height: 1.2; }
 .jogo .genero { font-size: 14px; color: var(--apagado); font-weight: 600; }
 .jogo p { font-size: 15.5px; color: #cfc8ea; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.plats { display: flex; gap: 6px; }
+.plats span { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 700; color: var(--apagado); }
+.plats svg { width: 14px; height: 14px; }
+.plats span + span::before { content: ''; width: 4px; height: 4px; border-radius: 2px; background: currentColor; opacity: .5; margin-right: 1px; }
 .recursos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 8px; }
 .recursos span { font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 99px; background: rgba(91, 29, 255, .22); color: #d9ccff; }
 .aviso-vazio { margin-top: 30px; color: var(--apagado); }
@@ -140,6 +152,24 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
 .smart .seta { display: block; margin-top: 4px; font: 800 12px/1.2 var(--corpo); color: var(--neon); text-align: right; }
 .smart .seta.esq { text-align: left; }
 
+/* abas Windows / Android no "Como instalar" */
+.abas-sistema { margin-top: 28px; display: inline-flex; padding: 5px; gap: 4px; border-radius: 14px; background: var(--noite2); border: 1px solid var(--linha); }
+.abas-sistema button { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 10px; border: 0; cursor: pointer;
+  background: transparent; color: var(--apagado); font: 700 16px var(--corpo); }
+.abas-sistema button svg { width: 18px; height: 18px; }
+.abas-sistema button[aria-selected="true"] { background: var(--roxo); color: #fff; }
+.passos[hidden] { display: none; }
+
+/* Desenho dos avisos do Android (Chrome e Play Protect) */
+.android-aviso { border-radius: 22px; background: #2b2930; color: #e6e0e9; padding: 22px 22px 16px; font-family: Roboto, var(--corpo); box-shadow: 0 16px 34px rgba(0, 0, 0, .45); }
+.android-aviso .ic { display: block; width: 28px; height: 28px; margin: 0 auto 10px; color: #d0bcff; }
+.android-aviso .t { font-size: 19px; line-height: 1.25; text-align: center; }
+.android-aviso .d { font-size: 13px; margin-top: 10px; color: #cac4d0; line-height: 1.45; }
+.android-aviso .botoes { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px 14px; margin-top: 16px; font-size: 13.5px; font-weight: 600; color: #d0bcff; }
+.android-aviso .botoes span { padding: 6px 4px; }
+.android-aviso .aqui { outline: 3px solid var(--neon); outline-offset: 2px; border-radius: 4px; }
+.android-aviso .seta { display: block; margin-top: 6px; font: 800 12px/1.2 var(--corpo); color: var(--neon); text-align: right; }
+
 /* dúvidas */
 .duvidas { margin-top: 30px; max-width: 820px; }
 .duvidas details { border-bottom: 1px solid var(--linha); }
@@ -153,7 +183,12 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
 .fim { padding: 80px 0 60px; text-align: center; border-top: 1px solid var(--linha);
   background: radial-gradient(60% 120% at 50% 100%, rgba(91, 29, 255, .3), transparent 70%); }
 .fim h2 { font-size: clamp(30px, 4vw, 48px); }
-.fim .btn-baixar { margin-top: 28px; height: 62px; padding: 0 30px; font-size: 19px; }
+.fim-botoes { align-items: center; }
+.fim .plataformas { justify-content: center; }
+.fim .plataforma { align-items: center; }
+.fim .btn { height: 62px; padding: 0 30px; font-size: 19px; }
+.fim .info { text-align: center; }
+.android .fim .plataformas { flex-direction: column-reverse; align-items: center; }
 .rodape { margin-top: 56px; font-size: 14px; color: var(--apagado); }
 
 /* ───────── celular ───────── */
@@ -170,7 +205,13 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
   .passo .lado { grid-template-columns: 1fr; }
   section.bloco { padding: 60px 0; }
 }
-@media (max-width: 420px) { .jogos { grid-template-columns: 1fr; } .chamada .btn-baixar { width: 100%; justify-content: center; font-size: 18px; padding: 14px 18px; } }
+@media (max-width: 520px) {
+  .jogos { grid-template-columns: 1fr; }
+  .plataformas, .plataforma { width: 100%; }
+  .chamada .btn { width: 100%; justify-content: center; font-size: 18px; padding: 14px 18px; }
+  .abas-sistema { display: flex; }
+  .abas-sistema button { flex: 1; justify-content: center; }
+}
 </style>
 </head>
 <body>
@@ -183,7 +224,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
       <a href="#instalar">Como instalar</a>
       <a href="#duvidas">Dúvidas</a>
     </nav>
-    <a class="btn btn-baixar" data-baixar href="https://github.com/yantlw/tlw-launcher/releases">Baixar</a>
+    <a class="btn btn-baixar" href="#baixar">Baixar</a>
   </div>
 </header>
 
@@ -192,14 +233,25 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
     <div class="miolo">
       <div>
         <h1>Todos os jogos em um lugar só!</h1>
-        <p class="sub">Instale o launcher uma vez e baixe os jogos com um clique. Quando sair atualização, ele baixa sozinho.</p>
-        <div class="chamada">
-          <a class="btn btn-baixar" data-baixar href="https://github.com/yantlw/tlw-launcher/releases">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Baixar o TLW Games Launcher
-          </a>
-          <span class="info" id="info-download">Grátis, pra <b>Windows 10 e 11</b>.</span>
-          <span class="no-celular">O launcher é pra PC com Windows. Abra este site no computador pra baixar e instalar.</span>
+        <p class="sub">Instale o launcher uma vez, no PC ou no celular Android, e baixe os jogos com um clique. Quando sair atualização, ele avisa e baixa.</p>
+        <div class="chamada" id="baixar">
+          <div class="plataformas">
+            <div class="plataforma">
+              <a class="btn btn-baixar" data-baixar="windows" href="https://github.com/yantlw/tlw-launcher/releases">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z" fill="currentColor"/></svg>
+                Baixar pra Windows
+              </a>
+              <span class="info" data-info="windows">Grátis, pra <b>Windows 10 e 11</b>.</span>
+            </div>
+            <div class="plataforma">
+              <a class="btn btn-outro" data-baixar="android" href="#" aria-disabled="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 9.5h9.6a1 1 0 0 1 1 1v6.3a1.4 1.4 0 0 1-1.4 1.4h-.6v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-2.8v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-.6a1.4 1.4 0 0 1-1.4-1.4v-6.3a1 1 0 0 1 1-1zM4.4 10a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6A1.2 1.2 0 0 1 4.4 10zm15.2 0a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6a1.2 1.2 0 0 1 1.2-1.2zM7.3 8.6a4.8 4.8 0 0 1 2.4-3.7l-.9-1.6a.4.4 0 0 1 .7-.4l.9 1.6a5.3 5.3 0 0 1 3.2 0l.9-1.6a.4.4 0 0 1 .7.4l-.9 1.6a4.8 4.8 0 0 1 2.4 3.7zm2.6-2.1a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2zm4.2 0a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2z" fill="currentColor"/></svg>
+                Baixar pra Android
+              </a>
+              <span class="info" data-info="android">Em breve.</span>
+            </div>
+          </div>
+          <span class="no-iphone">Ainda não tem versão pra iPhone. Dá pra baixar no Android ou num PC com Windows.</span>
         </div>
       </div>
       <div class="pilha vazia" id="pilha" aria-hidden="true">
@@ -211,7 +263,7 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
   <section class="bloco" id="jogos">
     <div class="miolo">
       <h2>Os jogos</h2>
-      <p class="intro">Todos de graça, direto pelo launcher.</p>
+      <p class="intro">Todos de graça, direto pelo launcher. Cada jogo mostra se tem pra PC, pra Android ou pros dois.</p>
       <div class="jogos" id="lista-jogos"></div>
       <p class="aviso-vazio" id="jogos-erro" hidden>Não deu pra carregar a lista de jogos agora. Ela aparece aqui de novo quando a página recarregar.</p>
     </div>
@@ -237,10 +289,14 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
     <div class="miolo">
       <h2>Como instalar</h2>
       <p class="intro">Leva menos de um minuto.</p>
-      <ol class="passos">
+      <div class="abas-sistema" role="tablist" aria-label="Sistema">
+        <button type="button" role="tab" id="aba-windows" aria-controls="passos-windows" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z" fill="currentColor"/></svg>Windows</button>
+        <button type="button" role="tab" id="aba-android" aria-controls="passos-android" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 9.5h9.6a1 1 0 0 1 1 1v6.3a1.4 1.4 0 0 1-1.4 1.4h-.6v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-2.8v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-.6a1.4 1.4 0 0 1-1.4-1.4v-6.3a1 1 0 0 1 1-1zM4.4 10a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6A1.2 1.2 0 0 1 4.4 10zm15.2 0a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6a1.2 1.2 0 0 1 1.2-1.2zM7.3 8.6a4.8 4.8 0 0 1 2.4-3.7l-.9-1.6a.4.4 0 0 1 .7-.4l.9 1.6a5.3 5.3 0 0 1 3.2 0l.9-1.6a.4.4 0 0 1 .7.4l-.9 1.6a4.8 4.8 0 0 1 2.4 3.7zm2.6-2.1a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2zm4.2 0a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2z" fill="currentColor"/></svg>Android</button>
+      </div>
+      <ol class="passos" id="passos-windows" role="tabpanel" aria-labelledby="aba-windows">
         <li class="passo">
           <div><h3>Baixe o instalador</h3>
-            <p>Clique em <a href="#" data-baixar>Baixar o TLW Games Launcher</a>. O arquivo se chama <b>TLW-Games-Launcher-Setup</b> e vai pra sua pasta Downloads.</p></div>
+            <p>Clique em <a href="#baixar" data-baixar="windows">Baixar pra Windows</a>. O arquivo se chama <b>TLW-Games-Launcher-Setup</b> e vai pra sua pasta Downloads.</p></div>
         </li>
         <li class="passo importante">
           <div class="lado">
@@ -273,6 +329,52 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
             <p>O launcher abre sozinho. Clique num jogo, depois em Instalar, e quando terminar, em Jogar.</p></div>
         </li>
       </ol>
+      <ol class="passos" id="passos-android" role="tabpanel" aria-labelledby="aba-android" hidden>
+        <li class="passo importante">
+          <div class="lado">
+            <div><h3>Baixe o app e confirme o download</h3>
+              <p>No celular, toque em <a href="#baixar" data-baixar="android">Baixar pra Android</a>. O navegador avisa que esse tipo de arquivo pode ser perigoso: ele avisa isso de todo app que não vem da Play Store.</p>
+              <p>Toque em <b>Fazer o download mesmo assim</b>.</p></div>
+            <div class="telas" role="img" aria-label="Desenho do aviso do Chrome: toque em Fazer o download mesmo assim">
+              <div class="android-aviso">
+                <div class="t">Fazer o download do arquivo?</div>
+                <div class="d">Este tipo de arquivo pode danificar seu dispositivo.</div>
+                <div class="botoes"><span>Cancelar</span><span class="aqui">Fazer o download mesmo assim</span></div>
+                <span class="seta">toque aqui</span>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="passo importante">
+          <div class="lado">
+            <div><h3>Abra o arquivo e permita a instalação</h3>
+              <p>Toque no arquivo baixado (<b>TLW-Games-Launcher-Android</b>). Na primeira vez, o Android pede pra você permitir que o navegador instale apps: toque em <b>Configurações</b>, ative <b>Permitir desta fonte</b> e volte.</p>
+              <p>Se o Play Protect avisar que não conhece o app, toque em <b>Mais detalhes</b> e depois em <b>Instalar mesmo assim</b>. O texto muda um pouco de celular pra celular.</p></div>
+            <div class="telas" role="img" aria-label="Desenho do aviso do Play Protect: toque em Mais detalhes e depois em Instalar mesmo assim">
+              <div class="android-aviso">
+                <svg class="ic" viewBox="0 0 24 24"><path d="M12 2.5 4.5 5.3v6c0 4.7 3.2 8.9 7.5 10.2 4.3-1.3 7.5-5.5 7.5-10.2v-6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <div class="t">App não verificado</div>
+                <div class="d">O Play Protect não reconhece o desenvolvedor deste app.</div>
+                <div class="botoes"><span class="aqui">Mais detalhes</span><span>OK</span></div>
+                <span class="seta">1º toque aqui</span>
+              </div>
+              <div class="android-aviso">
+                <div class="d" style="margin-top:0">Apps de desenvolvedores desconhecidos às vezes não são seguros…</div>
+                <div class="botoes"><span class="aqui">Instalar mesmo assim</span></div>
+                <span class="seta">2º depois aqui</span>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="passo">
+          <div><h3>Abra a loja da TLW e escolha um jogo</h3>
+            <p>O app aparece com o nome <b>TLW Games</b>. Toque num jogo e em <b>Instalar</b>. Na primeira vez, a loja pede pra você permitir que ela instale os jogos: ela mostra o passo a passo e continua sozinha quando você volta.</p></div>
+        </li>
+        <li class="passo">
+          <div><h3>Pronto, é só jogar</h3>
+            <p>Cada jogo vira um app no seu celular, com o ícone dele. Quando sair atualização, a loja avisa em <b>Meus jogos</b>.</p></div>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -286,12 +388,16 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
           <p>Esse aviso aparece pra todo programa que ainda não tem uma assinatura digital paga (ela custa caro por ano). Ele vai diminuindo conforme mais gente instala. O launcher só baixa os jogos da TLW e não mexe em mais nada do seu PC.</p></details>
         <details><summary>Funciona no meu PC?</summary>
           <p>Funciona no Windows 10 e 11, de 64 bits. Não precisa de placa de vídeo forte: os jogos da TLW rodam em quase qualquer PC.</p></details>
+        <details><summary>Funciona no meu celular?</summary>
+          <p>Funciona no Android 7 ou mais novo. Pra iPhone ainda não tem. Nem todo jogo tem versão pra celular: na lista de jogos aparece se ele é pra PC, pra Android ou pros dois.</p></details>
+        <details><summary>Por que o Android avisa que o app pode ser perigoso?</summary>
+          <p>O Android avisa isso de todo app baixado fora da Play Store. A loja da TLW só baixa e instala os jogos da TLW. Se preferir, confira que o arquivo veio deste site antes de instalar.</p></details>
         <details><summary>Precisa de internet pra jogar?</summary>
           <p>Só pra baixar e atualizar. Depois de instalado, dá pra jogar sem internet.</p></details>
         <details><summary>Onde ficam os jogos?</summary>
           <p>Em C:\Program Files\TLW Games\Games. Dá pra mudar a pasta nas Configurações do launcher, ou mover só um jogo pra outro disco pela engrenagem do jogo.</p></details>
         <details><summary>Como desinstalo?</summary>
-          <p>Pelo Windows: Configurações, Aplicativos, TLW Games Launcher, Desinstalar. Ele pergunta se você quer apagar os jogos também.</p></details>
+          <p>No PC: Configurações do Windows, Aplicativos, TLW Games Launcher, Desinstalar. Ele pergunta se você quer apagar os jogos também. No Android: segure o ícone do app e toque em Desinstalar (cada jogo é um app separado).</p></details>
         <details><summary>Deu algum problema, e agora?</summary>
           <p>No launcher, vá em Configurações e clique em Gerar relatório. Aparece um arquivo na sua área de trabalho: mande ele pra TLW Games que a gente vê o que aconteceu.</p></details>
       </div>
@@ -301,10 +407,22 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
   <section class="fim">
     <div class="miolo">
       <h2>Bora jogar?</h2>
-      <a class="btn btn-baixar" data-baixar href="https://github.com/yantlw/tlw-launcher/releases">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 20h16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        Baixar o TLW Games Launcher
-      </a>
+      <div class="chamada fim-botoes"><div class="plataformas">
+            <div class="plataforma">
+              <a class="btn btn-baixar" data-baixar="windows" href="https://github.com/yantlw/tlw-launcher/releases">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z" fill="currentColor"/></svg>
+                Baixar pra Windows
+              </a>
+              <span class="info" data-info="windows">Grátis, pra <b>Windows 10 e 11</b>.</span>
+            </div>
+            <div class="plataforma">
+              <a class="btn btn-outro" data-baixar="android" href="#" aria-disabled="true">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 9.5h9.6a1 1 0 0 1 1 1v6.3a1.4 1.4 0 0 1-1.4 1.4h-.6v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-2.8v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-.6a1.4 1.4 0 0 1-1.4-1.4v-6.3a1 1 0 0 1 1-1zM4.4 10a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6A1.2 1.2 0 0 1 4.4 10zm15.2 0a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6a1.2 1.2 0 0 1 1.2-1.2zM7.3 8.6a4.8 4.8 0 0 1 2.4-3.7l-.9-1.6a.4.4 0 0 1 .7-.4l.9 1.6a5.3 5.3 0 0 1 3.2 0l.9-1.6a.4.4 0 0 1 .7.4l-.9 1.6a4.8 4.8 0 0 1 2.4 3.7zm2.6-2.1a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2zm4.2 0a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2z" fill="currentColor"/></svg>
+                Baixar pra Android
+              </a>
+              <span class="info" data-info="android">Em breve.</span>
+            </div>
+          </div></div>
       <p class="rodape">TLW Games e Chará Studios</p>
     </div>
   </section>
@@ -314,8 +432,11 @@ h2 { font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3.4vw
 // ───── Configuração: o mesmo repositório que o launcher e o Admin usam ─────
 const REPO = 'yantlw/tlw-launcher';
 
-// No celular não dá pra instalar: mostra o aviso pra abrir no PC.
-if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) document.body.classList.add('celular');
+// Android: o botão do Android vem primeiro e o "Como instalar" abre na aba Android.
+// iPhone: avisa que ainda não tem versão.
+const NO_ANDROID = /Android/i.test(navigator.userAgent);
+if (NO_ANDROID) document.body.classList.add('android');
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) document.body.classList.add('iphone');
 
 const API = (arq) => `https://api.github.com/repos/${REPO}/contents/${arq}`;
 const RAW = (arq) => `https://raw.githubusercontent.com/${REPO}/main/${arq}`;
@@ -351,6 +472,11 @@ function emBreve(j) {
   return !!j.emBreve;
 }
 
+const ICONE_PC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zM11.5 4.3 21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zM11.5 12.5H21V21l-9.5-1.3z" fill="currentColor"/></svg>';
+const ICONE_ANDROID = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 9.5h9.6a1 1 0 0 1 1 1v6.3a1.4 1.4 0 0 1-1.4 1.4h-.6v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-2.8v2.3a1.2 1.2 0 0 1-2.4 0v-2.3h-.6a1.4 1.4 0 0 1-1.4-1.4v-6.3a1 1 0 0 1 1-1zM4.4 10a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6A1.2 1.2 0 0 1 4.4 10zm15.2 0a1.2 1.2 0 0 1 1.2 1.2v4.6a1.2 1.2 0 0 1-2.4 0v-4.6a1.2 1.2 0 0 1 1.2-1.2zM7.3 8.6a4.8 4.8 0 0 1 2.4-3.7l-.9-1.6a.4.4 0 0 1 .7-.4l.9 1.6a5.3 5.3 0 0 1 3.2 0l.9-1.6a.4.4 0 0 1 .7.4l-.9 1.6a4.8 4.8 0 0 1 2.4 3.7zm2.6-2.1a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2zm4.2 0a.6.6 0 1 0 0 1.2.6.6 0 0 0 0-1.2z" fill="currentColor"/></svg>';
+const temPC = (j) => [].concat(j.download || []).filter(Boolean).length > 0 || emBreve(j);
+const temAndroid = (j) => !!(j.android && (j.android.url || j.android.mostrar));
+
 function mostrarJogos(dados) {
   const jogos = [].concat((dados && dados.jogos) || []).filter((j) => j && j.nome && !j.removido);
   // Disponíveis primeiro, depois os que vão sair.
@@ -364,6 +490,7 @@ function mostrarJogos(dados) {
       <div class="txt">
         <h3>${esc(j.nome)}</h3>
         ${j.genero ? `<span class="genero">${esc(j.genero)}</span>` : ''}
+        <span class="plats">${temPC(j) ? `<span>${ICONE_PC}PC</span>` : ''}${temAndroid(j) ? `<span>${ICONE_ANDROID}Android</span>` : ''}</span>
         ${j.descricao ? `<p>${esc(j.descricao)}</p>` : ''}
         ${recursos.length ? `<div class="recursos">${recursos.map((r) => `<span>${esc(r)}</span>`).join('')}</div>` : ''}
       </div>
@@ -381,17 +508,50 @@ function mostrarJogos(dados) {
   if (l && l.logo) $('#marca').innerHTML = `<img src="${esc(l.logo)}" alt="${esc(l.nome || 'TLW Games')}" referrerpolicy="no-referrer">`;
 }
 
+const textoMB = (b) => (b ? `${Math.max(1, Math.round(b / 1048576))} MB` : '');
+const textoData = (t) => (t ? new Date(t).toLocaleDateString('pt-BR') : '');
+
 function mostrarDownload(v) {
   const inst = v && v.instalador;
   if (!inst || !inst.url) return;
-  document.querySelectorAll('[data-baixar]').forEach((a) => { a.href = inst.url; });
-  const mb = inst.tamanho ? `${Math.round(inst.tamanho / 1048576)} MB` : '';
-  const quando = inst.publicadoEm ? new Date(inst.publicadoEm).toLocaleDateString('pt-BR') : '';
-  $('#info-download').innerHTML = `Grátis, pra <b>Windows 10 e 11</b>.${mb ? ` Tem ${mb}.` : ''}${quando ? ` Versão de ${quando}.` : ''}`;
+  document.querySelectorAll('[data-baixar="windows"]').forEach((a) => { a.href = inst.url; });
+  const mb = textoMB(inst.tamanho);
+  const quando = textoData(inst.publicadoEm);
+  document.querySelectorAll('[data-info="windows"]').forEach((x) => {
+    x.innerHTML = `Grátis, pra <b>Windows 10 e 11</b>.${mb ? ` Tem ${mb}.` : ''}${quando ? ` Versão de ${quando}.` : ''}`;
+  });
 }
+
+function mostrarAndroid(v) {
+  const apk = v && v.apk;
+  if (!apk || !apk.url) return;
+  document.querySelectorAll('[data-baixar="android"]').forEach((a) => { a.href = apk.url; a.removeAttribute('aria-disabled'); });
+  const mb = textoMB(apk.tamanho);
+  const quando = textoData(apk.publicadoEm);
+  document.querySelectorAll('[data-info="android"]').forEach((x) => {
+    x.innerHTML = `Grátis, pra <b>Android 7 ou mais novo</b>.${mb ? ` Tem ${mb}.` : ''}${quando ? ` Versão de ${quando}.` : ''}`;
+  });
+}
+
+// No Android, o botão do Android fica com a cor principal e o do Windows vira o secundário.
+if (NO_ANDROID) {
+  document.querySelectorAll('[data-baixar="android"].btn').forEach((a) => { a.classList.replace('btn-outro', 'btn-baixar'); });
+  document.querySelectorAll('[data-baixar="windows"].btn').forEach((a) => { a.classList.replace('btn-baixar', 'btn-outro'); });
+}
+
+// Abas Windows / Android do "Como instalar".
+function abrirAba(qual) {
+  ['windows', 'android'].forEach((s) => {
+    $(`#aba-${s}`).setAttribute('aria-selected', String(s === qual));
+    $(`#passos-${s}`).hidden = s !== qual;
+  });
+}
+document.querySelectorAll('.abas-sistema [role="tab"]').forEach((b) => b.addEventListener('click', () => abrirAba(b.id.replace('aba-', ''))));
+if (NO_ANDROID) abrirAba('android');
 
 lerJSON('jogos.json').then(mostrarJogos).catch(() => { $('#jogos-erro').hidden = false; });
 lerJSON('app/versao.json').then(mostrarDownload).catch(() => { /* fica o link pra página de downloads do GitHub */ });
+lerJSON('android/versao.json').then(mostrarAndroid).catch(() => { /* Android ainda não publicado: fica "Em breve" */ });
 </script>
 </body>
 </html>
