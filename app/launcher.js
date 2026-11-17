@@ -1195,6 +1195,7 @@ async function verificar(id) {
 // ou um por jogo em Avançado). O nome desse aplicativo é o que aparece em "Jogando ...".
 
 const discordEstado = { sock: null, id: null };
+let discordReserva = null; // { nonce, atividade } pra reenviar se o Discord recusar
 
 function caminhoDiscord(i) {
   if (process.platform === 'win32') return `\\\\?\\pipe\\discord-ipc-${i}`;
@@ -1238,6 +1239,12 @@ function tentarDiscord(i, clientId) {
         if (op === 3) sock.write(quadroDiscord(4, msg)); // ping -> pong
         else if (op === 2) fim(false);                    // Discord recusou (ID errado?)
         else if (msg.evt === 'READY') fim(true);
+        else if (msg.evt === 'ERROR' && discordReserva && msg.nonce === discordReserva.nonce) {
+          // Discord antigo recusou os campos novos: manda de novo do jeito clássico.
+          const reserva = discordReserva;
+          discordReserva = null;
+          if (!sock.destroyed) sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid, activity: reserva.atividade }, nonce: crypto.randomUUID() }));
+        }
       }
     });
   });
@@ -1271,16 +1278,34 @@ async function discordMostrar(jogo, inicio) {
   const sock = await conectarDiscord(id);
   if (!sock) return;
   const capa = /^https:\/\//i.test(jogo.capa || '') ? jogo.capa : '';
-  const atividade = {
-    // Com aplicativo próprio do jogo, o nome do jogo já aparece no "Jogando".
-    details: doJogo ? (jogo.genero || undefined) : jogo.nome,
+  // Com o aplicativo geral (TLW Games), o Discord recebe o nome do jogo de duas formas:
+  //  - name: troca o "TLW Games" do topo pelo nome do jogo (Discord atual aceita);
+  //  - status_display_type 2: na lista de membros/amigos o "Jogando ..." usa o
+  //    details, que é o nome do jogo. Assim, mesmo se o Discord ignorar o name,
+  //    o status mostra "Jogando <nome do jogo>" e não "Jogando TLW Games".
+  // Com aplicativo próprio do jogo, o nome já vem do aplicativo.
+  const atividade = doJogo ? {
+    details: jogo.genero || undefined,
     state: 'pelo TLW Games Launcher',
+  } : {
+    type: 0,
+    name: String(jogo.nome || '').slice(0, 128),
+    details: String(jogo.nome || '').slice(0, 128),
+    state: 'pelo TLW Games Launcher',
+    status_display_type: 2,
+  };
+  Object.assign(atividade, {
     timestamps: { start: inicio },
     ...(capa ? { assets: { large_image: capa, large_text: jogo.nome } } : {}),
-  };
+  });
   const link = String(visual.discordLink || '').trim();
   if (/^https:\/\//i.test(link)) atividade.buttons = [{ label: 'Baixar o TLW Games Launcher', url: link }];
-  sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid, activity: atividade }, nonce: crypto.randomUUID() }));
+  const nonce = crypto.randomUUID();
+  if ('status_display_type' in atividade) {
+    const { name, status_display_type, type, ...classica } = atividade;
+    discordReserva = { nonce, atividade: classica };
+  } else discordReserva = null;
+  sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid, activity: atividade }, nonce }));
 }
 
 function discordLimpar() {
