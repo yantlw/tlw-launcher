@@ -121,7 +121,15 @@
       ],
       "icone": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/32d43dfb-c021-4940-ba9b-42e24e-mwh1yzah.png",
       "atualizadoEm": "2026-11-15T01:52:48.075Z",
-      "lancadoEm": "2026-11-10T15:00:00.000Z"
+      "lancadoEm": "2026-11-10T15:00:00.000Z",
+      "android": {
+        "url": "https://github.com/yantlw/hit-the-papa-tudo/releases/download/android-v1.6.0-10600/hit-the-papa-tudo-android-1.6.0.apk",
+        "tamanho": 2320058,
+        "pacote": "com.tlwgames.hitthepapatudo",
+        "versaoCodigo": 10600,
+        "versaoNome": "1.6.0",
+        "publicadoEm": "2026-11-17T23:28:35.036Z"
+      }
     }
   ]
 }
