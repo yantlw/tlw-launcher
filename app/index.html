@@ -2139,26 +2139,16 @@ $('#config').addEventListener('click', async (e) => {
 tlw.aoEvento('pasta', (d) => { cfgUI.movendo = d.fase === 'movendo'; renderConfig(); });
 
 
-// Discord: conta pro motor onde a pessoa está ("Na página inicial", "Vendo X"...).
-// Janela minimizada ou escondida perto do relógio = some do Discord.
+// Discord: "Jogando TLW Games Launcher" enquanto a janela está à vista.
+// Minimizada ou escondida perto do relógio = some do Discord.
 let discordTelaAntes = '';
 function avisarTelaDiscord() {
-  let tela;
-  let jogo = null;
-  if (document.hidden) tela = 'oculto';
-  else if (document.body.classList.contains('ver-config')) tela = 'config';
-  else if (document.body.classList.contains('ver-downloads')) tela = 'downloads';
-  else if (ui.inicio) tela = 'inicio';
-  else if (ui.selecionado) { tela = 'jogo'; jogo = ui.selecionado; }
-  else tela = 'biblioteca';
-  const chave = `${tela}|${jogo || ''}`;
-  if (chave === discordTelaAntes) return;
-  discordTelaAntes = chave;
-  tlw.chamar('discord-tela', { tela, jogo }).catch(() => { discordTelaAntes = ''; });
+  const tela = document.hidden ? 'oculto' : 'launcher';
+  if (tela === discordTelaAntes) return;
+  discordTelaAntes = tela;
+  tlw.chamar('discord-tela', { tela }).catch(() => { discordTelaAntes = ''; });
 }
 document.addEventListener('visibilitychange', avisarTelaDiscord);
-document.addEventListener('click', () => setTimeout(avisarTelaDiscord, 50));
-document.addEventListener('keyup', () => setTimeout(avisarTelaDiscord, 50));
 setInterval(avisarTelaDiscord, 2000);
 
 aplicarModo();
