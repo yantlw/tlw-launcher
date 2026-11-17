@@ -937,7 +937,7 @@ async function jogar(id) {
 
   filho.once('exit', () => {
     rodando.delete(id);
-    if (!rodando.size) discordLimpar();
+    if (!rodando.size) revisarDiscordLauncher(true);
     const est = lerEstado();
     if (est[id]) {
       est[id].tempoJogado = (est[id].tempoJogado || 0) + (Date.now() - inicio);
@@ -1310,10 +1310,97 @@ async function discordMostrar(jogo, inicio) {
 
 function discordLimpar() {
   const sock = discordEstado.sock;
+  discordReserva = null;
   if (!sock || sock.destroyed) return;
   sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid }, nonce: crypto.randomUUID() }));
-  setTimeout(discordFechar, 500);
+  setTimeout(() => { if (discordEstado.sock === sock && !discordLauncher.enviado && !rodando.size) discordFechar(); }, 500);
 }
+
+// ───────────── Discord enquanto mexe no launcher ─────────────
+// Sem jogo aberto, o perfil mostra "Jogando TLW Games Launcher" e onde a pessoa está
+// (página inicial, vendo um jogo, downloads...) e o que está baixando. A tela avisa
+// pra onde a pessoa foi (ação "discord-tela"); a janela escondida/minimizada limpa.
+// O Discord aceita poucas trocas por minuto, então manda no máximo 1 a cada 15 s.
+
+const discordLauncher = { tela: 'oculto', jogo: null, inicio: Date.now(), enviado: '', ultimo: 0, timer: null };
+const DISCORD_INTERVALO = 15000;
+
+function nomeDoJogo(id) {
+  const j = catalogo.find((x) => x.id === id);
+  return (j && j.nome) || (lerEstado()[id] || {}).info?.nome || id;
+}
+
+function atividadeDoLauncher() {
+  const { tela, jogo } = discordLauncher;
+  if (!tela || tela === 'oculto') return null;
+  let details = {
+    inicio: 'Na página inicial',
+    biblioteca: 'Na biblioteca',
+    downloads: 'Vendo os downloads',
+    config: 'Nas configurações',
+  }[tela] || 'Na biblioteca';
+  if (tela === 'jogo' && jogo && catalogo.some((j) => j.id === jogo)) details = `Vendo ${nomeDoJogo(jogo)}`;
+  const d = ativo && downloads.get(ativo);
+  let state;
+  if (d && d.fase === 'instalando') state = `Instalando ${nomeDoJogo(ativo)}`;
+  else if (d && (d.fase === 'baixando' || d.fase === 'reconectando')) state = `Baixando ${nomeDoJogo(ativo)}`;
+  const img = String(visual.discordImagem || '').trim();
+  const atividade = {
+    type: 0,
+    name: 'TLW Games Launcher',
+    details: details.slice(0, 128),
+    ...(state ? { state: state.slice(0, 128) } : {}),
+    status_display_type: 0,
+    timestamps: { start: discordLauncher.inicio },
+    assets: { large_image: /^https:\/\//i.test(img) ? img : 'launcher', large_text: 'TLW Games Launcher' },
+  };
+  const link = String(visual.discordLink || '').trim();
+  if (/^https:\/\//i.test(link)) atividade.buttons = [{ label: 'Baixar o TLW Games Launcher', url: link }];
+  return atividade;
+}
+
+// agora = true: manda já (ex.: o jogo acabou de fechar), sem esperar os 15 s.
+async function revisarDiscordLauncher(agora) {
+  if (rodando.size) return; // jogo aberto: quem manda é o discordMostrar
+  const id = String(visual.discord || '').trim();
+  const atividade = lerConfig().discord && /^\d{15,22}$/.test(id) ? atividadeDoLauncher() : null;
+  const chave = atividade ? JSON.stringify([atividade.details, atividade.state]) : '';
+  if (!agora && chave === discordLauncher.enviado) return;
+  if (!atividade) {
+    discordLauncher.enviado = '';
+    clearTimeout(discordLauncher.timer);
+    discordLauncher.timer = null;
+    discordLimpar();
+    return;
+  }
+  const falta = discordLauncher.ultimo + DISCORD_INTERVALO - Date.now();
+  if (!agora && falta > 0) {
+    if (!discordLauncher.timer) discordLauncher.timer = setTimeout(() => { discordLauncher.timer = null; revisarDiscordLauncher(); }, falta);
+    return;
+  }
+  clearTimeout(discordLauncher.timer);
+  discordLauncher.timer = null;
+  discordLauncher.ultimo = Date.now(); // Discord fechado: tenta de novo só daqui a 15 s
+  const sock = await conectarDiscord(id);
+  if (!sock || rodando.size) return;
+  discordLauncher.enviado = chave;
+  discordLauncher.ultimo = Date.now();
+  const nonce = crypto.randomUUID();
+  const { name, status_display_type, type, ...classica } = atividade;
+  discordReserva = { nonce, atividade: classica };
+  sock.write(quadroDiscord(1, { cmd: 'SET_ACTIVITY', args: { pid: process.pid, activity: atividade }, nonce }));
+}
+
+function discordTela({ tela, jogo } = {}) {
+  const telas = ['inicio', 'biblioteca', 'jogo', 'downloads', 'config', 'oculto'];
+  discordLauncher.tela = telas.includes(tela) ? tela : 'oculto';
+  discordLauncher.jogo = typeof jogo === 'string' ? jogo : null;
+  revisarDiscordLauncher().catch(() => {});
+  return { ok: true };
+}
+
+// Começou/terminou download: atualiza o "Baixando ..." (respeitando os 15 s).
+setInterval(() => { revisarDiscordLauncher().catch(() => {}); }, 5000).unref();
 
 // ───────────── configurações ─────────────
 
@@ -1339,6 +1426,7 @@ function salvarConfig(mudancas) {
   limiteBytes = atual.limiteMBs * 1024 * 1024;
   processarFila(); // se desligou "esperar o jogo fechar", a fila anda
   if (!atual.discord) discordLimpar();
+  revisarDiscordLauncher(true).catch(() => {});
   if (casca) casca.aplicarConfig(atual);
   return verConfig();
 }
@@ -1661,6 +1749,7 @@ const ACOES = {
   'jogo-localizar': (dados) => localizarJogo(dados || {}),
   'jogo-mover': (dados) => moverJogo(dados || {}),
   relatorio: () => gerarRelatorio(),
+  'discord-tela': (dados) => discordTela(dados || {}),
   verificar: ({ id }) => verificar(id),
 };
 
