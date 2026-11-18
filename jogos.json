@@ -66,7 +66,15 @@
         "Salva o progresso",
         "Dublado em português"
       ],
-      "icone": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/826ebd40-3a32-4396-b702-47b41b-mwh1yct7.png"
+      "icone": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/826ebd40-3a32-4396-b702-47b41b-mwh1yct7.png",
+      "android": {
+        "url": "https://github.com/yantlw/Five-nights-at-chara-lobisomem/releases/download/android-v1.5.1-10501/Five-nights-at-chara-lobisomem-android-1.5.1.apk",
+        "tamanho": 30639264,
+        "pacote": "com.tlwgames.fivenightsatcharalobisomem",
+        "versaoCodigo": 10501,
+        "versaoNome": "1.5.1",
+        "publicadoEm": "2026-11-18T01:39:08.576Z"
+      }
     },
     {
       "id": "jogo",
