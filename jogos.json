@@ -11,20 +11,20 @@
     {
       "id": "bar-do-chara-fighter",
       "nome": "Super Bar do Chará Fighter",
-      "versao": "0.2.0",
+      "versao": "0.2.1",
       "genero": "Luta, Ação",
       "desenvolvedor": "TLW Games",
       "descricao": "Os lendários frequentadores do Bar do Chará chegaram, e agora é na porrada!\n\nSuper Bar do Chará Fighter é um jogo de luta 2D em pixel art que bebe direto da fonte dos clássicos de fliperama dos anos 90. Escolha seu lutador, domine os golpes especiais e mostre quem manda no bar.\n\n8 LUTADORES, CADA UM COM SEU ESTILO\nChará e seu facão, Cururoca, o garçom das bandejadas, Yantlw, o karateca de kimono roxo, Jurureca e suas correntes, Big Hand e suas mãozadas, SpeedMestre, Papa-tudo e o pesado Gordão de Caxias. Cada um tem golpes especiais próprios, versões EX, um Super e uma Ruptura devastadora pra virar a luta no último suspiro.\n\nMODOS DE JOGO\n• Arcade: enfrente todos os lutadores até o seu rival e conquiste o troféu de campeão.\n• Versus: desafie um amigo no mesmo PC, com os dois escolhendo o lutador ao mesmo tempo.\n• Equipes 3×3: monte seu time e troque de lutador no meio da porradaria.\n• Treino: com tutorial, lista de golpes, gravação de sequências e caixas de colisão.\n\n8 CENÁRIOS COM MÚSICA PRÓPRIA\nDo Barraco do Chará ao Hospício Paulo Guedes, passando pela Big House, o Paraíso dos Cromados, a Casa da Mãozada, o Poeta Del Toro, o Dojo Violeta e o Estúdio X. Cada cenário tem uma trilha pesada, feita pra porradaria.\n\nE MAIS\n• CPU com estilo próprio: cada lutador joga do seu jeito.\n• Galeria com artes e músicas que você libera jogando.\n• Estatísticas de vitórias, derrotas e lutadores favoritos.\n• Suporte a controle (Xbox e PlayStation) e teclado, com botões configuráveis.\n\nEM BREVE: Modo História e mais 16 lutadores já confirmados!",
-      "notas": "Novos lutadores: Dener Big Hand Jr e Oh Damn Bro.\nYantlw e Cururoca refeitos: sprites e golpes novos.\nNovos cenários com música própria: Estoque do Paraguai e Sala do Bro.\nCombos: 4 combos com nome para cada lutador.\nInterface: a interface da luta ficou maior.\nArcade: a luta começa direto no cenário do adversário.\nCorreções: de tamanho de sprites, quedas, colisão, controles, revanche e treino.",
+      "notas": "Melhorias de Desempenho:\n\nO jogo agora usa menos memória, as imagens são carregadas de um jeito mais leve logo na abertura.\nA velocidade da luta ficou ainda mais estável. Se o computador engasgar, a luta não entra em câmera lenta: ela continua no ritmo certo e só pula alguns quadros de desenho.\n\nAbertura:\n\nOs vídeos de abertura agora começam sobre uma tela preta, sem nenhum quadro estranho antes de tocar.\n\nNovidade:\n\nO Super Bar do Chará Fighter agora também está preparado para celular Android, com controles de toque. No PC nada muda na jogabilidade, nos golpes, no visual ou no som.",
       "tamanho": "132 MB",
       "tipo": "exe",
       "arquivo": "Super-Bar-Do-Chara-Fighter.exe",
       "repo": "bar-do-char--fighter",
       "download": [
-        "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.2.0/Super-Bar-Do-Chara-Fighter.exe"
+        "https://github.com/yantlw/bar-do-char--fighter/releases/download/v0.2.1/Super-Bar-Do-Chara-Fighter.exe"
       ],
       "capa": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/d8f6d23e-76ff-419a-9329-6d45aa-mwh1xqy3.png",
-      "atualizadoEm": "2026-11-17T06:12:31.049Z",
+      "atualizadoEm": "2026-11-18T04:21:44.007Z",
       "logo": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/d414c1d2-d169-4ccb-8a3e-c0d76a-mwczh9dl.png",
       "banner": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/98224dd7-6c6c-4864-92fa-9d4ae1-mwczwygb.png",
       "cardX": 73,
