@@ -38,12 +38,12 @@
       "icone": "https://raw.githubusercontent.com/yantlw/tlw-launcher/main/imagens/6234c111-28ba-4310-bb7a-b2493d-mwh1wt2l.png",
       "lancadoEm": "2026-11-03T15:00:00.000Z",
       "android": {
-        "url": "https://github.com/yantlw/bar-do-char--fighter/releases/download/android-v0.2.1-201/bar-do-char--fighter-android-0.2.1.apk",
-        "tamanho": 50879629,
+        "url": "https://github.com/yantlw/bar-do-char--fighter/releases/download/android-v0.2.2-202/bar-do-char--fighter-android-0.2.2.apk",
+        "tamanho": 50899517,
         "pacote": "com.tlwgames.superbardocharafighter",
-        "versaoCodigo": 201,
-        "versaoNome": "0.2.1",
-        "publicadoEm": "2026-11-18T04:16:01.566Z"
+        "versaoCodigo": 202,
+        "versaoNome": "0.2.2",
+        "publicadoEm": "2026-11-22T17:08:31.956Z"
       }
     },
     {
